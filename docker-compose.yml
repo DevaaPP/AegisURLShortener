@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: aegis-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: aegis_db
+      POSTGRES_USER: aegis_user
+      POSTGRES_PASSWORD: aegis_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: aegis-redis
+    restart: always
+    ports:
+      - "6379:6379"
+      - "8001:8001" # RedisInsight dashboard (optional but extremely useful for users!)
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
