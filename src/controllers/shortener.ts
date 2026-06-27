@@ -208,7 +208,7 @@ export async function shortenUrl(req: Request, res: Response): Promise<void> {
     await redis.cacheLink(shortCode, cacheData as any);
 
     // Construct full redirection URL
-    const scheme = req.secure ? 'https' : 'http';
+    const scheme = req.header('x-forwarded-proto') || (req.secure ? 'https' : 'http');
     const host = req.get('host');
     const shortUrl = `${scheme}://${host}/${shortCode}`;
 

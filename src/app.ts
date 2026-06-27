@@ -12,6 +12,9 @@ import path from 'path';
 
 const app = express();
 
+// Trust reverse proxies (Vercel, Cloudflare, etc.) to extract correct client IPs and protocol headers
+app.set('trust proxy', true);
+
 // 1. Security & Utility Middlewares
 app.use(
   helmet({
