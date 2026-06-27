@@ -3,9 +3,35 @@
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Bulletproof Storage Service (Fallback to in-memory if localStorage is blocked by tracking prevention)
+  const safeStorage = {
+    inMemory: {},
+    getItem(key) {
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        return this.inMemory[key] || null;
+      }
+    },
+    setItem(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch (e) {
+        this.inMemory[key] = value;
+      }
+    },
+    removeItem(key) {
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {
+        delete this.inMemory[key];
+      }
+    }
+  };
+
   // Helper to parse stored JSON safely
   const getSafeJSON = (key) => {
-    const val = localStorage.getItem(key);
+    const val = safeStorage.getItem(key);
     if (!val || val === 'undefined' || val === 'null') return null;
     try {
       return JSON.parse(val);
@@ -16,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Global Application State
   const state = {
-    token: localStorage.getItem('token') === 'undefined' ? null : localStorage.getItem('token'),
+    token: safeStorage.getItem('token') === 'undefined' ? null : safeStorage.getItem('token'),
     user: getSafeJSON('user'),
     activeSection: 'shorten-section',
     charts: {
@@ -136,8 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    safeStorage.removeItem('token');
+    safeStorage.removeItem('user');
     state.token = null;
     state.user = null;
     updateAuthUI();
@@ -208,8 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Save user session
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      safeStorage.setItem('token', data.token);
+      safeStorage.setItem('user', JSON.stringify(data.user));
       state.token = data.token;
       state.user = data.user;
       
@@ -260,8 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error(loginData.error || loginData.message || 'Registration succeeded, but auto-login failed. Please sign in manually.');
       }
       
-      localStorage.setItem('token', loginData.token);
-      localStorage.setItem('user', JSON.stringify(loginData.user));
+      safeStorage.setItem('token', loginData.token);
+      safeStorage.setItem('user', JSON.stringify(loginData.user));
       state.token = loginData.token;
       state.user = loginData.user;
       
