@@ -10,6 +10,15 @@ class RedisService {
   constructor() {
     this.client = createClient({
       url: config.redisUrl,
+      socket: {
+        connectTimeout: 5000,
+        reconnectStrategy: (retries) => {
+          if (retries > 3) {
+            return new Error('Redis connection failed.');
+          }
+          return 1000;
+        }
+      }
     });
 
     this.client.on('error', (err) => {
