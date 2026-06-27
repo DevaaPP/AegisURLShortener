@@ -56,7 +56,7 @@ class SafeBrowsingService {
         return { safe: true, reason: 'Google Safe Browsing API failure, allowed fallback' };
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as any;
 
       if (data && data.matches && data.matches.length > 0) {
         const match = data.matches[0];
