@@ -1,27 +1,12 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "api/index.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(css|js|assets|favicon.ico|favicon.png)/(.*)",
-      "dest": "/public/$1/$2"
+      "source": "/api/:path*",
+      "destination": "/api/index"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "api/index.ts"
-    },
-    {
-      "src": "/([^/\\.]+)",
-      "dest": "api/index.ts"
-    },
-    {
-      "src": "/$",
-      "dest": "/public/index.html"
+      "source": "/:code",
+      "destination": "/api/index"
     }
   ]
 }
