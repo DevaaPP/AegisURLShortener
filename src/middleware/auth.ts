@@ -96,8 +96,8 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
           req.user = userPayload;
           return next();
         }
-      } catch (jwtError) {
-        // Invalid token
+      } catch (jwtError: any) {
+        console.error('JWT Verification failed:', jwtError.message || jwtError);
         res.status(401).json({ success: false, error: 'Unauthorized', message: 'Invalid token.' });
         return;
       }
