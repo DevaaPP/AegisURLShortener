@@ -1,4 +1,3 @@
-import serverless from 'serverless-http';
 import app from '../src/app';
 import { db } from '../src/services/db';
 import { redis } from '../src/services/redis';
@@ -13,15 +12,25 @@ async function bootstrap() {
     } catch (dbErr) {
       console.warn('Database schema initialization warning (likely concurrent conflict):', dbErr);
     }
-    await redis.connect();
+    try {
+      await redis.connect();
+    } catch (redisErr) {
+      console.error('Redis connection failure during bootstrap:', redisErr);
+    }
     isInitialized = true;
   }
 }
 
-const handler = serverless(app);
+// Intercept requests with a middleware to ensure Postgres and Redis are fully connected
+app.use(async (req, res, next) => {
+  try {
+    await bootstrap();
+    next();
+  } catch (err) {
+    console.error('Bootstrap middleware failure:', err);
+    next(err);
+  }
+});
 
-export default async (req: any, res: any) => {
-  // Ensure Postgres & Redis are connected before serving the request
-  await bootstrap();
-  return handler(req, res);
-};
+// Export the Express app instance directly (Vercel Node runtime native support)
+export default app;
