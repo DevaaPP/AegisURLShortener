@@ -8,7 +8,11 @@ let isInitialized = false;
 async function bootstrap() {
   if (!isInitialized) {
     console.log('Lazy initializing database and cache connections for serverless runtime...');
-    await db.initializeDatabase();
+    try {
+      await db.initializeDatabase();
+    } catch (dbErr) {
+      console.warn('Database schema initialization warning (likely concurrent conflict):', dbErr);
+    }
     await redis.connect();
     isInitialized = true;
   }

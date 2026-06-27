@@ -34,8 +34,7 @@ class RedisService {
       console.log('Redis Bloom Filter reserved successfully.');
       this.hasBloomModule = true;
     } catch (error: any) {
-      // If the command is not supported (e.g. standard Redis instead of Redis Stack)
-      if (error.message && error.message.includes('unknown command')) {
+      if (error.message && (error.message.includes('unknown command') || error.message.includes('not available'))) {
         console.warn('WARNING: Redis Bloom module not found. Falling back to Redis Set for existence check.');
         this.hasBloomModule = false;
       } else if (error.message && (error.message.includes('BUSYKEY') || error.message.includes('item exists'))) {
