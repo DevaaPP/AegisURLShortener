@@ -6,6 +6,7 @@ import { safeBrowsing } from './services/safebrowsing';
 import { analyticsService } from './services/analytics';
 import jwt from 'jsonwebtoken';
 import { config } from './config';
+import crypto from 'crypto';
 
 async function runVerification() {
   console.log('\n==================================================');
@@ -104,7 +105,7 @@ async function runVerification() {
       const email = `tenant-${Date.now()}@aegis.com`;
       const password = 'securePass123';
       const key = cryptoService.generateApiKey();
-      const pwdHash = cryptoService.encrypt(password).ciphertext;
+      const pwdHash = crypto.createHash('sha256').update(password).digest('hex');
 
       // Register direct query
       const insertUserRes = await db.query(

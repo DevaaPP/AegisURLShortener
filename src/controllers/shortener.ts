@@ -7,10 +7,11 @@ import { safeBrowsing } from '../services/safebrowsing';
 import { analyticsService } from '../services/analytics';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
+import crypto from 'crypto';
 
-// Simple password hashing using crypto pbkdf2 to keep packages light
+// Deterministic SHA-256 password hashing to fix comparison issues
 function hashPassword(password: string): string {
-  return cryptoService.encrypt(password).ciphertext; // reuse aes encryption as a hash or use pbkdf2
+  return crypto.createHash('sha256').update(password).digest('hex');
 }
 
 /**
@@ -300,8 +301,8 @@ export async function redirectUrl(req: Request, res: Response): Promise<void> {
     }
 
     if (expiresAtStr && new Date(expiresAtStr).getTime() < Date.now()) {
-      // Link expired: Mark inactive in DB and invalidate Cache
-      await db.query('UPDATE links SET is_active = false WHERE short_code = $1', [shortCode]);
+      // Link expired: Delete from DB and invalidate Cache to allow recreation
+      await db.query('DELETE FROM links WHERE short_code = $1', [shortCode]);
       await redis.invalidateCache(shortCode);
       res.status(410).send('<h1>410 Gone</h1><p>This short link has expired.</p>');
       return;
@@ -309,7 +310,7 @@ export async function redirectUrl(req: Request, res: Response): Promise<void> {
 
     // 5. Handle single-use links
     if (allowSingleUse) {
-      await db.query('UPDATE links SET is_active = false WHERE short_code = $1', [shortCode]);
+      await db.query('DELETE FROM links WHERE short_code = $1', [shortCode]);
       await redis.invalidateCache(shortCode);
     }
 

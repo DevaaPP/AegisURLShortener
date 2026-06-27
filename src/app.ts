@@ -8,12 +8,19 @@ import { getLinkAnalytics, getUserLinks } from './controllers/analytics';
 import { db } from './services/db';
 import { redis } from './services/redis';
 
+import path from 'path';
+
 const app = express();
 
 // 1. Security & Utility Middlewares
-app.use(helmet()); // Sets various HTTP headers for WAF security
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Allows CDN scripts like Chart.js to load without blocking
+  })
+);
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // 2. Global Authentication Parser (runs on all API calls, populates req.user if token/API key exists)
 app.use('/api', authenticate);

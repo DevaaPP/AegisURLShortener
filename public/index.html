@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AegisURL - Secure Distributed URL Redirection Engine</title>
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js for Aggregated Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dark-theme">
+  <!-- Glowing background elements -->
+  <div class="blob-bg blob-1"></div>
+  <div class="blob-bg blob-2"></div>
+  
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo">
+        <i class="fa-solid fa-shield-halved logo-icon"></i>
+        <span>Aegis<span>URL</span></span>
+      </div>
+      <nav class="nav-menu">
+        <a href="#shorten-section" class="nav-link active"><i class="fa-solid fa-link"></i> Shorten</a>
+        <a href="#dashboard-section" id="nav-dashboard" class="nav-link hidden"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+        <a href="#auth-section" id="nav-auth" class="nav-link"><i class="fa-solid fa-right-to-bracket"></i> Developer Sign In</a>
+        <div id="user-profile" class="user-profile-widget hidden">
+          <span id="user-email">email@test.com</span>
+          <button id="logout-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="app-container">
+    
+    <!-- SECTION 1: URL Shortener Card -->
+    <section id="shorten-section" class="app-section active">
+      <div class="hero-text">
+        <h1>Enterprise Redirection, Secured at the Edge</h1>
+        <p>Ultra-low redirection latency, integrated malware blocking, and AES-256 encrypted mappings.</p>
+      </div>
+
+      <div class="glass-card shortener-card">
+        <form id="shorten-form">
+          <div class="input-group">
+            <label for="target-url"><i class="fa-solid fa-globe"></i> Destination URL</label>
+            <input type="url" id="target-url" placeholder="https://your-long-sensitive-link.com/with-parameters" required>
+          </div>
+
+          <div class="advanced-grid">
+            <div class="input-group">
+              <label for="custom-code"><i class="fa-solid fa-signature"></i> Custom Alias (Optional)</label>
+              <input type="text" id="custom-code" placeholder="e.g., blackfriday">
+            </div>
+            
+            <div class="input-group">
+              <label for="expires-in"><i class="fa-solid fa-hourglass-half"></i> Expiry Timer</label>
+              <select id="expires-in">
+                <option value="">Never Expire</option>
+                <option value="60">1 Minute (Test)</option>
+                <option value="3600">1 Hour</option>
+                <option value="86400">1 Day</option>
+                <option value="604800">1 Week</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="checkbox-group">
+            <label class="checkbox-container">
+              <input type="checkbox" id="single-use">
+              <span class="checkmark"></span>
+              <span class="label-text"><i class="fa-solid fa-bolt-lightning"></i> Self-Destructing / Single-Use Link</span>
+            </label>
+          </div>
+
+          <button type="submit" id="shorten-submit" class="btn btn-primary btn-block">
+            <span>Generate Secure URL</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </form>
+
+        <div id="error-alert" class="alert alert-danger hidden">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span id="error-message">Error message goes here</span>
+        </div>
+
+        <!-- Result Box -->
+        <div id="result-box" class="result-box hidden">
+          <h3><i class="fa-solid fa-circle-check"></i> Link Secured Successfully</h3>
+          
+          <div class="result-url-wrapper">
+            <input type="text" id="shortened-url" readonly>
+            <button id="copy-btn" class="btn btn-copy" title="Copy to Clipboard">
+              <i class="fa-regular fa-copy"></i> Copy
+            </button>
+          </div>
+
+          <div class="result-meta-grid">
+            <div class="qr-code-wrapper">
+              <img id="qr-code-image" src="" alt="Short URL QR Code">
+              <span>Scan QR Code</span>
+            </div>
+            <div class="security-meta-details">
+              <h4>Security Metrics:</h4>
+              <ul>
+                <li><span class="meta-label">Encryption:</span> <span class="badge badge-success"><i class="fa-solid fa-lock"></i> AES-256-GCM</span></li>
+                <li><span class="meta-label">Threat Scan:</span> <span class="badge badge-info"><i class="fa-solid fa-circle-nodes"></i> Google Safe Browsing</span></li>
+                <li><span class="meta-label">Integrity Tag:</span> <span class="badge badge-secondary"><i class="fa-solid fa-barcode"></i> Verified</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Developer Authentication Portal -->
+    <section id="auth-section" class="app-section">
+      <div class="auth-wrapper">
+        <div class="glass-card auth-card">
+          <div class="auth-tabs">
+            <button id="tab-login" class="tab-btn active">Sign In</button>
+            <button id="tab-register" class="tab-btn">Register</button>
+          </div>
+
+          <!-- Login Form -->
+          <form id="login-form" class="auth-form active">
+            <div class="input-group">
+              <label for="login-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+              <input type="email" id="login-email" placeholder="dev@company.com" required>
+            </div>
+            <div class="input-group">
+              <label for="login-password"><i class="fa-solid fa-key"></i> Password</label>
+              <input type="password" id="login-password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+          </form>
+
+          <!-- Register Form -->
+          <form id="register-form" class="auth-form">
+            <div class="input-group">
+              <label for="register-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+              <input type="email" id="register-email" placeholder="dev@company.com" required>
+            </div>
+            <div class="input-group">
+              <label for="register-password"><i class="fa-solid fa-key"></i> Password</label>
+              <input type="password" id="register-password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Create Developer Account</button>
+          </form>
+
+          <div id="auth-alert" class="alert alert-danger hidden">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="auth-error-message">Error</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Developer SaaS Dashboard -->
+    <section id="dashboard-section" class="app-section">
+      <!-- API Credentials Header -->
+      <div class="glass-card credential-card">
+        <div class="credential-info">
+          <h3><i class="fa-solid fa-key"></i> SaaS Developer API Credentials</h3>
+          <p>Use this API key in your code header `X-API-Key` to generate short links programmatically.</p>
+        </div>
+        <div class="credential-key-wrapper">
+          <input type="password" id="api-key-display" readonly value="aegis_live_...">
+          <button id="toggle-key-visibility" class="btn btn-secondary"><i class="fa-solid fa-eye"></i></button>
+          <button id="copy-key-btn" class="btn btn-primary"><i class="fa-regular fa-copy"></i> Copy Key</button>
+        </div>
+      </div>
+
+      <!-- Links Inventory Container -->
+      <div class="dashboard-grid">
+        <div class="glass-card links-card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-list-ul"></i> Active Shortcodes</h3>
+            <button id="refresh-links-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate"></i> Refresh</button>
+          </div>
+          <div class="table-responsive">
+            <table class="links-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Created At</th>
+                  <th>Expiration</th>
+                  <th>Clicks</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="links-table-body">
+                <!-- Dynamically populated -->
+                <tr>
+                  <td colspan="5" class="table-empty">Loading links...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Click Analytics Dashboard Modal -->
+    <section id="analytics-section" class="app-section">
+      <div class="analytics-header">
+        <button id="back-to-dashboard-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
+        <h2>Analytics Overview: <span id="analytics-code-title">code</span></h2>
+      </div>
+
+      <div class="analytics-grid">
+        <!-- Main Timeline Chart -->
+        <div class="glass-card chart-card full-width">
+          <h3><i class="fa-solid fa-chart-area"></i> Redirection Traffic (Last 30 Days)</h3>
+          <div class="chart-container">
+            <canvas id="timeline-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Metric breakdown cards -->
+        <div class="glass-card breakdown-card">
+          <h3><i class="fa-solid fa-laptop-code"></i> Device & Browser split</h3>
+          <div class="pie-charts-container">
+            <div class="chart-box">
+              <canvas id="device-chart"></canvas>
+              <span>Devices</span>
+            </div>
+            <div class="chart-box">
+              <canvas id="browser-chart"></canvas>
+              <span>Browsers</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Geo Location table -->
+        <div class="glass-card geo-card">
+          <h3><i class="fa-solid fa-earth-americas"></i> Geolocation clicks</h3>
+          <table class="geo-table">
+            <thead>
+              <tr>
+                <th>Country</th>
+                <th>Redirections</th>
+              </tr>
+            </thead>
+            <tbody id="geo-table-body">
+              <tr>
+                <td colspan="2" class="table-empty">No geo data yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>&copy; 2026 AegisURL Inc. Designed for scale. Zero-downtime secure forwarding.</p>
+  </footer>
+
+  <!-- App Script -->
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -77,7 +77,7 @@ class DatabaseService {
       await client.query(`
         CREATE TABLE IF NOT EXISTS click_analytics (
           id SERIAL PRIMARY KEY,
-          link_id BIGINT REFERENCES links(id) ON DELETE CASCADE,
+          link_id BIGINT,
           short_code VARCHAR(50) NOT NULL,
           clicked_at TIMESTAMP NOT NULL,
           ip_address VARCHAR(45),
@@ -87,6 +87,10 @@ class DatabaseService {
           browser VARCHAR(50),
           referrer TEXT
         );
+      `);
+      // Run live migration to drop the constraint if it exists from previous installations
+      await client.query(`
+        ALTER TABLE click_analytics DROP CONSTRAINT IF EXISTS click_analytics_link_id_fkey;
       `);
       // Index for analytics queries
       await client.query(`
