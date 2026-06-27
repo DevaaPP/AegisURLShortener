@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/(css|js|assets|favicon.ico|favicon.png)/(.*)",
-      "dest": "/$1/$2"
+      "dest": "/public/$1/$2"
     },
     {
       "src": "/api/(.*)",
@@ -21,7 +21,7 @@
     },
     {
       "src": "/$",
-      "dest": "/index.html"
+      "dest": "/public/index.html"
     }
   ]
 }
