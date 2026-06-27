@@ -161,7 +161,7 @@ async function runVerification() {
         `INSERT INTO links (id, short_code, encrypted_url, iv, auth_tag, title, expires_at, allow_single_use)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (id) DO NOTHING;`,
-        [parseInt(linkId, 10), dummyCode, 'enc', 'iv', 'tag', 'Test link', null, false]
+        [linkId, dummyCode, 'enc', 'iv', 'tag', 'Test link', null, false]
       );
 
       // Add to Bloom Filter

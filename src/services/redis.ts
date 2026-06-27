@@ -38,7 +38,7 @@ class RedisService {
       if (error.message && error.message.includes('unknown command')) {
         console.warn('WARNING: Redis Bloom module not found. Falling back to Redis Set for existence check.');
         this.hasBloomModule = false;
-      } else if (error.message && error.message.includes('BUSYKEY')) {
+      } else if (error.message && (error.message.includes('BUSYKEY') || error.message.includes('item exists'))) {
         console.log('Redis Bloom Filter already exists and is ready.');
         this.hasBloomModule = true;
       } else {
@@ -131,7 +131,9 @@ class RedisService {
   }
 
   public async close() {
-    await this.client.quit();
+    if (this.client.isOpen) {
+      await this.client.quit();
+    }
   }
 }
 

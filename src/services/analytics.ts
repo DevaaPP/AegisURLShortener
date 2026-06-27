@@ -95,7 +95,7 @@ class AnalyticsService {
           messageIds.push(message.id);
           const data = message.message;
 
-          const linkId = parseInt(data.linkId, 10);
+          const linkId = data.linkId;
           const shortCode = data.shortCode;
           const clickedAt = new Date(data.clickedAt);
           const ipAddress = data.ipAddress;
@@ -164,11 +164,11 @@ class AnalyticsService {
     let browser = 'Unknown';
     let device = 'Desktop';
 
-    // 1. Detect OS
-    if (uaString.includes('Windows')) os = 'Windows';
-    else if (uaString.includes('Macintosh') || uaString.includes('Mac OS')) os = 'macOS';
+    // 1. Detect OS (check mobile platforms first to prevent false desktop OS matches)
+    if (uaString.includes('iPhone') || uaString.includes('iPad') || uaString.includes('iPod')) os = 'iOS';
     else if (uaString.includes('Android')) os = 'Android';
-    else if (uaString.includes('iPhone') || uaString.includes('iPad')) os = 'iOS';
+    else if (uaString.includes('Windows')) os = 'Windows';
+    else if (uaString.includes('Macintosh') || uaString.includes('Mac OS')) os = 'macOS';
     else if (uaString.includes('Linux')) os = 'Linux';
 
     // 2. Detect Browser
