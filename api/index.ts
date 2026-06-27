@@ -2,35 +2,29 @@ import app from '../src/app';
 import { db } from '../src/services/db';
 import { redis } from '../src/services/redis';
 
-let isInitialized = false;
+let isDbInitialized = false;
 
 async function bootstrap() {
-  if (!isInitialized) {
-    console.log('Lazy initializing database and cache connections for serverless runtime...');
+  // 1. Initialize DB schema once on container start (cold-start)
+  if (!isDbInitialized) {
     try {
       await db.initializeDatabase();
+      isDbInitialized = true;
     } catch (dbErr) {
       console.warn('Database schema initialization warning (likely concurrent conflict):', dbErr);
     }
-    try {
-      await redis.connect();
-    } catch (redisErr) {
-      console.error('Redis connection failure during bootstrap:', redisErr);
-    }
-    isInitialized = true;
+  }
+
+  // 2. Ensure Redis is connected on every request (reconnects if connection was dropped during serverless pause)
+  try {
+    await redis.connect();
+  } catch (redisErr) {
+    console.error('Redis connection failure during bootstrap:', redisErr);
   }
 }
 
-// Intercept requests with a middleware to ensure Postgres and Redis are fully connected
-app.use(async (req, res, next) => {
-  try {
-    await bootstrap();
-    next();
-  } catch (err) {
-    console.error('Bootstrap middleware failure:', err);
-    next(err);
-  }
-});
-
-// Export the Express app instance directly (Vercel Node runtime native support)
-export default app;
+// Export a custom handler that ensures DB and Redis connections are live before Express runs
+export default async (req: any, res: any) => {
+  await bootstrap();
+  return app(req, res);
+};
