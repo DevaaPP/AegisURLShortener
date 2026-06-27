@@ -19,6 +19,30 @@ class AnalyticsService {
     referrer: string;
   }): Promise<void> {
     try {
+      // Serverless hybrid mode: Write directly to Postgres if running on Vercel or if explicitly requested
+      if (process.env.VERCEL || process.env.SYNC_ANALYTICS === 'true') {
+        const { os, browser, device } = this.parseUserAgent(payload.userAgent);
+        const country = this.detectCountry(payload.ipAddress);
+        
+        await db.query(
+          `INSERT INTO click_analytics (link_id, short_code, clicked_at, ip_address, country, device, os, browser, referrer)
+           VALUES ($1, $2, NOW(), $3, $4, $5, $6, $7, $8)`,
+          [
+            payload.linkId,
+            payload.shortCode,
+            payload.ipAddress || null,
+            country,
+            device,
+            os,
+            browser,
+            payload.referrer || null,
+          ]
+        );
+        console.log(`[Sync Analytics] Logged click for code ${payload.shortCode} directly to database.`);
+        return;
+      }
+
+      // Standard big-tech performance: push to Redis Stream (worker processes it)
       const client = redis.getClient();
       await client.xAdd(this.streamName, '*', {
         linkId: payload.linkId,
@@ -29,8 +53,8 @@ class AnalyticsService {
         clickedAt: new Date().toISOString(),
       });
     } catch (error) {
-      console.error('Failed to log click to Redis Stream:', error);
-      // Fail-soft: we do not crash or block the redirect even if Redis stream is failing
+      console.error('Failed to log click analytics:', error);
+      // Fail-soft: we do not crash or block the redirect even if analytics is failing
     }
   }
 
