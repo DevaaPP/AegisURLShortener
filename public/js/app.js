@@ -83,6 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const linksTableBody = document.getElementById('links-table-body');
   const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
 
+  // Shortener Card Tabs
+  const tabShorten = document.getElementById('tab-shorten');
+  const tabApi = document.getElementById('tab-api');
+  const shortenFormTab = document.getElementById('shorten-form-tab');
+  const terminalTab = document.getElementById('terminal-tab');
+
   // ========================================================================
   // ROUTING & NAVIGATION ENGINE
   // ========================================================================
@@ -190,6 +196,23 @@ document.addEventListener('DOMContentLoaded', () => {
       copyKeyBtn.innerHTML = originalText;
     }, 2000);
   });
+
+  // Shortener Card Tab Toggles
+  if (tabShorten && tabApi) {
+    tabShorten.addEventListener('click', () => {
+      tabShorten.classList.add('active');
+      tabApi.classList.remove('active');
+      shortenFormTab.classList.remove('hidden');
+      terminalTab.classList.add('hidden');
+    });
+
+    tabApi.addEventListener('click', () => {
+      tabApi.classList.add('active');
+      tabShorten.classList.remove('active');
+      terminalTab.classList.remove('hidden');
+      shortenFormTab.classList.add('hidden');
+    });
+  }
 
   // ========================================================================
   // AUTHENTICATION OPERATIONS (LOGIN/SIGNUP)

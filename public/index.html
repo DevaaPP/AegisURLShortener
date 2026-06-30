@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AegisURL - Secure Distributed URL Redirection Engine</title>
+  <title>AegisURL - Developer URL Shortener</title>
   
   <!-- Modern Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,23 +19,20 @@
   <!-- Custom Styling -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="dark-theme">
-  <!-- Glowing background elements -->
-  <div class="blob-bg blob-1"></div>
-  <div class="blob-bg blob-2"></div>
+<body>
   
   <header class="app-header">
     <div class="header-container">
       <div class="logo">
         <i class="fa-solid fa-shield-halved logo-icon"></i>
-        <span>Aegis<span>URL</span></span>
+        <span>AegisURL</span>
       </div>
       <nav class="nav-menu">
         <a href="#shorten-section" class="nav-link active"><i class="fa-solid fa-link"></i> Shorten</a>
         <a href="#dashboard-section" id="nav-dashboard" class="nav-link hidden"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-        <a href="#auth-section" id="nav-auth" class="nav-link"><i class="fa-solid fa-right-to-bracket"></i> Developer Sign In</a>
+        <a href="#auth-section" id="nav-auth" class="nav-link"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>
         <div id="user-profile" class="user-profile-widget hidden">
-          <span id="user-email">email@test.com</span>
+          <span id="user-email" style="font-size: 0.8rem; color: var(--text-muted); margin-right: 0.5rem;">email@test.com</span>
           <button id="logout-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
         </div>
       </nav>
@@ -51,9 +48,15 @@
         <p>A secure, developer-focused URL shortener with AES-256 encryption at rest and real-time click statistics.</p>
       </div>
 
-      <div class="dashboard-grid">
-        <!-- URL Shortener Card -->
-        <div class="glass-card shortener-card">
+      <div class="glass-card shortener-card">
+        <!-- Clean Tab Nav inside Card -->
+        <div class="card-tabs">
+          <button id="tab-shorten" class="card-tab-btn active">Shorten Link</button>
+          <button id="tab-api" class="card-tab-btn">Developer API</button>
+        </div>
+
+        <!-- Tab 1: Shortener Form -->
+        <div id="shorten-form-tab">
           <form id="shorten-form">
             <div class="input-group">
               <label for="target-url"><i class="fa-solid fa-globe"></i> Destination URL</label>
@@ -125,12 +128,12 @@
           </div>
         </div>
 
-        <!-- Interactive Developer Terminal Card -->
-        <div class="terminal-card">
+        <!-- Tab 2: Interactive Developer Terminal Card -->
+        <div id="terminal-tab" class="terminal-card hidden">
           <div class="terminal-header">
-            <span class="terminal-dot red"></span>
-            <span class="terminal-dot yellow"></span>
-            <span class="terminal-dot green"></span>
+            <span class="terminal-dot"></span>
+            <span class="terminal-dot"></span>
+            <span class="terminal-dot"></span>
             <span class="terminal-title">bash - API Request Generator</span>
           </div>
           <div class="terminal-body">
@@ -194,42 +197,40 @@ curl -X POST <span class="str">"https://aegis-url.vercel.app/api/v1/shorten"</sp
       <!-- API Credentials Header -->
       <div class="glass-card credential-card">
         <div class="credential-info">
-          <h3><i class="fa-solid fa-key"></i> SaaS Developer API Credentials</h3>
-          <p>Use this API key in your code header `X-API-Key` to generate short links programmatically.</p>
+          <h3 style="font-size: 1rem; font-weight:600; color:var(--text-primary); margin-bottom:0.25rem;"><i class="fa-solid fa-key" style="color:var(--text-muted);"></i> SaaS Developer API Credentials</h3>
+          <p style="font-size: 0.85rem; color:var(--text-muted);">Use this API key in your code header `X-API-Key` to generate short links programmatically.</p>
         </div>
-        <div class="credential-key-wrapper">
-          <input type="password" id="api-key-display" readonly value="aegis_live_...">
-          <button id="toggle-key-visibility" class="btn btn-secondary"><i class="fa-solid fa-eye"></i></button>
-          <button id="copy-key-btn" class="btn btn-primary"><i class="fa-regular fa-copy"></i> Copy Key</button>
+        <div class="credential-key-wrapper" style="display: flex; gap: 0.5rem; margin-top:0.75rem;">
+          <input type="password" id="api-key-display" readonly value="aegis_live_..." style="flex: 1; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 0.5rem 0.75rem; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.85rem; outline: none;">
+          <button id="toggle-key-visibility" class="btn btn-secondary" style="padding: 0.5rem 0.75rem;"><i class="fa-solid fa-eye"></i></button>
+          <button id="copy-key-btn" class="btn btn-primary" style="padding: 0.5rem 0.75rem;"><i class="fa-regular fa-copy"></i> Copy</button>
         </div>
       </div>
 
       <!-- Links Inventory Container -->
-      <div class="dashboard-grid">
-        <div class="glass-card links-card">
-          <div class="card-header">
-            <h3><i class="fa-solid fa-list-ul"></i> Active Shortcodes</h3>
-            <button id="refresh-links-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate"></i> Refresh</button>
-          </div>
-          <div class="table-responsive">
-            <table class="links-table">
-              <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>Created At</th>
-                  <th>Expiration</th>
-                  <th>Clicks</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="links-table-body">
-                <!-- Dynamically populated -->
-                <tr>
-                  <td colspan="5" class="table-empty">Loading links...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+      <div class="glass-card links-card">
+        <div class="dashboard-actions">
+          <h2>Active Shortcodes</h2>
+          <button id="refresh-links-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="links-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Created</th>
+                <th>Expiration</th>
+                <th>Clicks</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="links-table-body">
+              <!-- Dynamically populated -->
+              <tr>
+                <td colspan="5" style="text-align:center; padding:2rem 0; color:var(--text-muted);">Loading links...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
@@ -241,54 +242,53 @@ curl -X POST <span class="str">"https://aegis-url.vercel.app/api/v1/shorten"</sp
         <h2>Analytics Overview: <span id="analytics-code-title">code</span></h2>
       </div>
 
-      <div class="analytics-grid">
-        <!-- Main Timeline Chart -->
-        <div class="glass-card chart-card full-width">
-          <h3><i class="fa-solid fa-chart-area"></i> Redirection Traffic (Last 30 Days)</h3>
+      <!-- Main Timeline Chart -->
+      <div class="glass-card chart-card">
+        <h3><i class="fa-solid fa-chart-area"></i> Redirection Traffic (Last 30 Days)</h3>
+        <div class="chart-container">
+          <canvas id="timeline-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Metric breakdown cards (stacked) -->
+      <div class="donut-charts-row">
+        <div class="donut-chart-card">
+          <h3><i class="fa-solid fa-laptop"></i> Devices</h3>
           <div class="chart-container">
-            <canvas id="timeline-chart"></canvas>
+            <canvas id="device-chart"></canvas>
           </div>
         </div>
-
-        <!-- Metric breakdown cards -->
-        <div class="glass-card breakdown-card">
-          <h3><i class="fa-solid fa-laptop-code"></i> Device & Browser split</h3>
-          <div class="pie-charts-container">
-            <div class="chart-box">
-              <canvas id="device-chart"></canvas>
-              <span>Devices</span>
-            </div>
-            <div class="chart-box">
-              <canvas id="browser-chart"></canvas>
-              <span>Browsers</span>
-            </div>
+        <div class="donut-chart-card">
+          <h3><i class="fa-solid fa-window-maximize"></i> Browsers</h3>
+          <div class="chart-container">
+            <canvas id="browser-chart"></canvas>
           </div>
         </div>
+      </div>
 
-        <!-- Geo Location table -->
-        <div class="glass-card geo-card">
-          <h3><i class="fa-solid fa-earth-americas"></i> Geolocation clicks</h3>
-          <table class="geo-table">
-            <thead>
-              <tr>
-                <th>Country</th>
-                <th>Redirections</th>
-              </tr>
-            </thead>
-            <tbody id="geo-table-body">
-              <tr>
-                <td colspan="2" class="table-empty">No geo data yet.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <!-- Geo Location table -->
+      <div class="glass-card geo-card" style="margin-top: 1.25rem;">
+        <h3><i class="fa-solid fa-earth-americas"></i> Geolocation clicks</h3>
+        <table class="geo-table" style="width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.85rem;">
+          <thead>
+            <tr style="text-align: left; color: var(--text-muted); border-bottom: 1px solid var(--border-color);">
+              <th style="padding: 0.5rem 0; font-weight:600; font-size:0.75rem; text-transform:uppercase;">Country</th>
+              <th style="padding: 0.5rem 0; font-weight:600; font-size:0.75rem; text-transform:uppercase; text-align: right;">Redirections</th>
+            </tr>
+          </thead>
+          <tbody id="geo-table-body">
+            <tr>
+              <td colspan="2" style="padding: 1.5rem 0; text-align: center; color: var(--text-muted);">No geo data yet.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
   </main>
 
-  <footer class="app-footer">
-    <p>&copy; 2026 AegisURL Inc. Designed for scale. Zero-downtime secure forwarding.</p>
+  <footer class="app-footer" style="text-align: center; padding: 2rem 0; border-top: 1px solid var(--border-color); margin-top: 4rem;">
+    <p style="font-size: 0.75rem; color: var(--text-muted);">&copy; 2026 AegisURL Inc. Designed for scale. Zero-downtime secure forwarding.</p>
   </footer>
 
   <!-- App Script -->
