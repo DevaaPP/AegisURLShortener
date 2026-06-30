@@ -13,11 +13,25 @@ class DatabaseService {
   private pool: Pool;
 
   constructor() {
+    let connectionString = config.databaseUrl;
+    
+    if (!isLocal) {
+      try {
+        const dbUrl = new URL(config.databaseUrl);
+        dbUrl.searchParams.delete('sslmode');
+        dbUrl.searchParams.delete('ssl');
+        connectionString = dbUrl.toString();
+      } catch (err) {
+        console.warn('Failed to parse database URL search params:', err);
+      }
+    }
+
     this.pool = new Pool({
-      connectionString: config.databaseUrl,
+      connectionString,
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
+      ssl: isLocal ? undefined : { rejectUnauthorized: false }
     });
 
     this.pool.on('error', (err) => {
