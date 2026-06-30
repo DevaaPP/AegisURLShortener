@@ -232,6 +232,7 @@ export async function redirectUrl(req: Request, res: Response): Promise<void> {
   const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '';
   const userAgent = req.headers['user-agent'] || '';
   const referrer = req.headers['referer'] || ''; // Express parses Referer into 'referer' header key
+  const countryCode = (req.headers['x-vercel-ip-country'] as string) || '';
 
   try {
     // 1. Bloom Filter existence test (Shields DB from 404 penetration)
@@ -321,6 +322,7 @@ export async function redirectUrl(req: Request, res: Response): Promise<void> {
       ipAddress,
       userAgent,
       referrer,
+      countryCode,
     });
 
     // 7. Perform 302 Redirection

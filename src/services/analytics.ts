@@ -17,12 +17,13 @@ class AnalyticsService {
     ipAddress: string;
     userAgent: string;
     referrer: string;
+    countryCode?: string;
   }): Promise<void> {
     try {
       // Serverless hybrid mode: Write directly to Postgres if running on Vercel or if explicitly requested
       if (process.env.VERCEL || process.env.SYNC_ANALYTICS === 'true') {
         const { os, browser, device } = this.parseUserAgent(payload.userAgent);
-        const country = this.detectCountry(payload.ipAddress);
+        const country = this.resolveCountry(payload.countryCode || '', payload.ipAddress);
         
         await db.query(
           `INSERT INTO click_analytics (link_id, short_code, clicked_at, ip_address, country, device, os, browser, referrer)
@@ -50,6 +51,7 @@ class AnalyticsService {
         ipAddress: payload.ipAddress || '',
         userAgent: payload.userAgent || '',
         referrer: payload.referrer || '',
+        countryCode: payload.countryCode || '',
         clickedAt: new Date().toISOString(),
       });
     } catch (error) {
@@ -125,10 +127,11 @@ class AnalyticsService {
           const ipAddress = data.ipAddress;
           const userAgent = data.userAgent;
           const referrer = data.referrer || null;
+          const countryCode = data.countryCode || '';
 
           // Parse User Agent and Geolocation
           const parsedUa = this.parseUserAgent(userAgent);
-          const country = this.detectCountry(ipAddress);
+          const country = this.resolveCountry(countryCode, ipAddress);
 
           valuePlaceholders.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3}, $${paramIndex + 4}, $${paramIndex + 5}, $${paramIndex + 6}, $${paramIndex + 7}, $${paramIndex + 8})`);
           insertValues.push(
@@ -227,6 +230,57 @@ class AnalyticsService {
     const hash = ip.split('.').reduce((acc, part) => acc + parseInt(part || '0', 10), 0);
     const countries = ['United States', 'India', 'United Kingdom', 'Germany', 'Japan', 'Canada', 'Singapore'];
     return countries[hash % countries.length];
+  }
+
+  // A mapping of 2-letter ISO country codes to full country names
+  private countryMap: { [key: string]: string } = {
+    'US': 'United States',
+    'IN': 'India',
+    'GB': 'United Kingdom',
+    'DE': 'Germany',
+    'JP': 'Japan',
+    'CA': 'Canada',
+    'SG': 'Singapore',
+    'AU': 'Australia',
+    'FR': 'France',
+    'BR': 'Brazil',
+    'NL': 'Netherlands',
+    'IT': 'Italy',
+    'ES': 'Spain',
+    'RU': 'Russia',
+    'CN': 'China',
+    'ZA': 'South Africa',
+    'AE': 'United Arab Emirates',
+    'NZ': 'New Zealand',
+    'IE': 'Ireland',
+    'SE': 'Sweden',
+    'CH': 'Switzerland',
+    'DK': 'Denmark',
+    'NO': 'Norway',
+    'FI': 'Finland',
+    'PL': 'Poland',
+    'HK': 'Hong Kong',
+    'KR': 'South Korea',
+    'MX': 'Mexico',
+    'ID': 'Indonesia',
+    'MY': 'Malaysia',
+    'TH': 'Thailand',
+    'VN': 'Vietnam',
+    'PH': 'Philippines',
+  };
+
+  /**
+   * Resolves country code to full name, or falls back to IP check if code is empty.
+   */
+  private resolveCountry(countryCode: string, ip: string): string {
+    if (countryCode && countryCode !== 'Unknown') {
+      const codeUpper = countryCode.toUpperCase();
+      if (this.countryMap[codeUpper]) {
+        return this.countryMap[codeUpper];
+      }
+      return codeUpper; // Fallback to raw country code (e.g. "BE") if not in standard map
+    }
+    return this.detectCountry(ip);
   }
 }
 
