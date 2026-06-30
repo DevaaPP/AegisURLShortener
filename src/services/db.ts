@@ -5,14 +5,16 @@ class DatabaseService {
   private pool: Pool;
 
   constructor() {
+    const isLocal = config.databaseUrl.includes('localhost') || 
+                    config.databaseUrl.includes('127.0.0.1') || 
+                    config.databaseUrl.includes('aegis-postgres');
+
     this.pool = new Pool({
       connectionString: config.databaseUrl,
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
-      ssl: config.databaseUrl.includes('sslmode=require') || process.env.NODE_ENV === 'production' || process.env.VERCEL
-        ? { rejectUnauthorized: false }
-        : undefined
+      ssl: isLocal ? undefined : { rejectUnauthorized: false }
     });
 
     this.pool.on('error', (err) => {
