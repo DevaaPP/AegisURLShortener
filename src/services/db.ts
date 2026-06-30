@@ -7,10 +7,12 @@ class DatabaseService {
   constructor() {
     this.pool = new Pool({
       connectionString: config.databaseUrl,
-      // For production, configuration parameters like max pool size, timeouts should be tuned
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
+      ssl: config.databaseUrl.includes('sslmode=require') || process.env.NODE_ENV === 'production' || process.env.VERCEL
+        ? { rejectUnauthorized: false }
+        : undefined
     });
 
     this.pool.on('error', (err) => {
