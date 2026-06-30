@@ -615,7 +615,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('hashchange', handleHashWithParams);
 
+  // ========================================================================
+  // INTERACTIVE API REQUEST TERMINAL GENERATOR
+  // ========================================================================
+  const targetUrlInput = document.getElementById('target-url');
+  const customCodeInput = document.getElementById('custom-code');
+  const expiresInSelect = document.getElementById('expires-in');
+  const singleUseCheckbox = document.getElementById('single-use');
+
+  const termUrl = document.getElementById('term-url');
+  const termCustomComma = document.getElementById('term-custom-comma');
+  const termCustom = document.getElementById('term-custom');
+  const termExpiryComma = document.getElementById('term-expiry-comma');
+  const termExpiry = document.getElementById('term-expiry');
+  const termSingleComma = document.getElementById('term-single-comma');
+  const termSingle = document.getElementById('term-single');
+
+  function updateApiRequestTerminal() {
+    if (!termUrl) return; // safety guard
+    
+    // 1. Update URL
+    const urlVal = targetUrlInput.value || 'https://your-long-sensitive-link.com/with-parameters';
+    termUrl.textContent = `"${urlVal}"`;
+
+    // 2. Custom code
+    const customVal = customCodeInput.value.trim();
+    if (customVal) {
+      termCustomComma.textContent = ',\n    ';
+      termCustom.innerHTML = `<span class="key">"customCode"</span>: <span class="str">"${customVal}"</span>`;
+    } else {
+      termCustomComma.textContent = '';
+      termCustom.innerHTML = '';
+    }
+
+    // 3. Expiry
+    const expiryVal = expiresInSelect.value;
+    if (expiryVal) {
+      termExpiryComma.textContent = ',\n    ';
+      termExpiry.innerHTML = `<span class="key">"expiresInSecs"</span>: <span class="val">${expiryVal}</span>`;
+    } else {
+      termExpiryComma.textContent = '';
+      termExpiry.innerHTML = '';
+    }
+
+    // 4. Single use
+    const singleVal = singleUseCheckbox.checked;
+    if (singleVal) {
+      termSingleComma.textContent = ',\n    ';
+      termSingle.innerHTML = `<span class="key">"allowSingleUse"</span>: <span class="val">true</span>`;
+    } else {
+      termSingleComma.textContent = '';
+      termSingle.innerHTML = '';
+    }
+  }
+
+  // Bind input listeners
+  [targetUrlInput, customCodeInput, expiresInSelect, singleUseCheckbox].forEach(el => {
+    if (el) {
+      el.addEventListener('input', updateApiRequestTerminal);
+      el.addEventListener('change', updateApiRequestTerminal);
+    }
+  });
+
   // Initialize UI & Session State
   updateAuthUI();
   handleHashWithParams();
+  updateApiRequestTerminal();
 });

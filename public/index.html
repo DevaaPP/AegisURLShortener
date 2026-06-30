@@ -51,74 +51,96 @@
         <p>A secure, developer-focused URL shortener with AES-256 encryption at rest and real-time click statistics.</p>
       </div>
 
-      <div class="glass-card shortener-card">
-        <form id="shorten-form">
-          <div class="input-group">
-            <label for="target-url"><i class="fa-solid fa-globe"></i> Destination URL</label>
-            <input type="url" id="target-url" placeholder="https://your-long-sensitive-link.com/with-parameters" required>
+      <div class="dashboard-grid">
+        <!-- URL Shortener Card -->
+        <div class="glass-card shortener-card">
+          <form id="shorten-form">
+            <div class="input-group">
+              <label for="target-url"><i class="fa-solid fa-globe"></i> Destination URL</label>
+              <input type="url" id="target-url" placeholder="https://your-long-sensitive-link.com/with-parameters" required>
+            </div>
+
+            <div class="advanced-grid">
+              <div class="input-group">
+                <label for="custom-code"><i class="fa-solid fa-signature"></i> Custom Alias (Optional)</label>
+                <input type="text" id="custom-code" placeholder="e.g., blackfriday">
+              </div>
+              
+              <div class="input-group">
+                <label for="expires-in"><i class="fa-solid fa-hourglass-half"></i> Expiry Timer</label>
+                <select id="expires-in">
+                  <option value="">Never Expire</option>
+                  <option value="60">1 Minute (Test)</option>
+                  <option value="3600">1 Hour</option>
+                  <option value="86400">1 Day</option>
+                  <option value="604800">1 Week</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="checkbox-group">
+              <label class="checkbox-container">
+                <input type="checkbox" id="single-use">
+                <span class="checkmark"></span>
+                <span class="label-text"><i class="fa-solid fa-bolt-lightning"></i> Self-Destructing / Single-Use Link</span>
+              </label>
+            </div>
+
+            <button type="submit" id="shorten-submit" class="btn btn-primary btn-block">
+              <span>Generate Secure URL</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </form>
+
+          <div id="error-alert" class="alert alert-danger hidden">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="error-message">Error message goes here</span>
           </div>
 
-          <div class="advanced-grid">
-            <div class="input-group">
-              <label for="custom-code"><i class="fa-solid fa-signature"></i> Custom Alias (Optional)</label>
-              <input type="text" id="custom-code" placeholder="e.g., blackfriday">
-            </div>
+          <!-- Result Box -->
+          <div id="result-box" class="result-box hidden">
+            <h3><i class="fa-solid fa-circle-check"></i> Link Secured Successfully</h3>
             
-            <div class="input-group">
-              <label for="expires-in"><i class="fa-solid fa-hourglass-half"></i> Expiry Timer</label>
-              <select id="expires-in">
-                <option value="">Never Expire</option>
-                <option value="60">1 Minute (Test)</option>
-                <option value="3600">1 Hour</option>
-                <option value="86400">1 Day</option>
-                <option value="604800">1 Week</option>
-              </select>
+            <div class="result-url-wrapper">
+              <input type="text" id="shortened-url" readonly>
+              <button id="copy-btn" class="btn btn-copy" title="Copy to Clipboard">
+                <i class="fa-regular fa-copy"></i> Copy
+              </button>
+            </div>
+
+            <div class="result-meta-grid">
+              <div class="qr-code-wrapper">
+                <img id="qr-code-image" src="" alt="Short URL QR Code">
+                <span>Scan QR Code</span>
+              </div>
+              <div class="security-meta-details">
+                <h4>Security Metrics:</h4>
+                <ul>
+                  <li><span class="meta-label">Encryption:</span> <span class="badge badge-success"><i class="fa-solid fa-lock"></i> AES-256-GCM</span></li>
+                  <li><span class="meta-label">Threat Scan:</span> <span class="badge badge-info"><i class="fa-solid fa-circle-nodes"></i> Google Safe Browsing</span></li>
+                  <li><span class="meta-label">Integrity Tag:</span> <span class="badge badge-secondary"><i class="fa-solid fa-barcode"></i> Verified</span></li>
+                </ul>
+              </div>
             </div>
           </div>
-
-          <div class="checkbox-group">
-            <label class="checkbox-container">
-              <input type="checkbox" id="single-use">
-              <span class="checkmark"></span>
-              <span class="label-text"><i class="fa-solid fa-bolt-lightning"></i> Self-Destructing / Single-Use Link</span>
-            </label>
-          </div>
-
-          <button type="submit" id="shorten-submit" class="btn btn-primary btn-block">
-            <span>Generate Secure URL</span>
-            <i class="fa-solid fa-arrow-right"></i>
-          </button>
-        </form>
-
-        <div id="error-alert" class="alert alert-danger hidden">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <span id="error-message">Error message goes here</span>
         </div>
 
-        <!-- Result Box -->
-        <div id="result-box" class="result-box hidden">
-          <h3><i class="fa-solid fa-circle-check"></i> Link Secured Successfully</h3>
-          
-          <div class="result-url-wrapper">
-            <input type="text" id="shortened-url" readonly>
-            <button id="copy-btn" class="btn btn-copy" title="Copy to Clipboard">
-              <i class="fa-regular fa-copy"></i> Copy
-            </button>
+        <!-- Interactive Developer Terminal Card -->
+        <div class="terminal-card">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span class="terminal-title">bash - API Request Generator</span>
           </div>
-
-          <div class="result-meta-grid">
-            <div class="qr-code-wrapper">
-              <img id="qr-code-image" src="" alt="Short URL QR Code">
-              <span>Scan QR Code</span>
-            </div>
-            <div class="security-meta-details">
-              <h4>Security Metrics:</h4>
-              <ul>
-                <li><span class="meta-label">Encryption:</span> <span class="badge badge-success"><i class="fa-solid fa-lock"></i> AES-256-GCM</span></li>
-                <li><span class="meta-label">Threat Scan:</span> <span class="badge badge-info"><i class="fa-solid fa-circle-nodes"></i> Google Safe Browsing</span></li>
-                <li><span class="meta-label">Integrity Tag:</span> <span class="badge badge-secondary"><i class="fa-solid fa-barcode"></i> Verified</span></li>
-              </ul>
-            </div>
+          <div class="terminal-body">
+            <pre><span class="comment"># You can also shorten URLs via the Developer REST API</span>
+curl -X POST <span class="str">"https://aegis-url.vercel.app/api/v1/shorten"</span> \
+  -H <span class="str">"X-API-Key: &lt;YOUR_API_KEY&gt;"</span> \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d '{
+    <span class="key">"targetUrl"</span>: <span id="term-url" class="str">"https://your-long-sensitive-link.com/with-parameters"</span><span id="term-custom-comma"></span><span id="term-custom"></span><span id="term-expiry-comma"></span><span id="term-expiry"></span><span id="term-single-comma"></span><span id="term-single"></span>
+  }'</pre>
           </div>
         </div>
       </div>
