@@ -221,12 +221,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // ========================================================================
   function updateAuthUI() {
     const isAnon = safeStorage.getItem('is_anonymous') === 'true';
+    const mobileToggle = document.getElementById('mobile-menu-toggle');
+    const mobMenu = document.getElementById('mobile-menu');
 
     if (state.token && state.user && !isAnon) {
       homeNav.classList.add('hidden');
       dashboardNav.classList.remove('hidden');
       userEmailDisplay.textContent = state.user.email;
       document.getElementById('hero-auth-ctas').classList.add('hidden');
+      if (mobileToggle) mobileToggle.classList.add('hidden');
+      if (mobMenu) mobMenu.classList.add('hidden');
       
       if (state.user.apiKey) {
         apiKeyDisplay.value = state.user.apiKey;
@@ -235,6 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
       homeNav.classList.remove('hidden');
       dashboardNav.classList.add('hidden');
       document.getElementById('hero-auth-ctas').classList.remove('hidden');
+      if (mobileToggle) mobileToggle.classList.remove('hidden');
       apiKeyDisplay.value = '';
     }
   }
@@ -865,6 +870,36 @@ POST /api/v1/shorten</pre>
       showToast('Support ticket registered successfully.', 'success');
     });
   });
+
+  // Bind disclaimer buttons inside the form
+  document.getElementById('btn-disclaimer-privacy').addEventListener('click', () => openModal(legalTemplates.privacy));
+  document.getElementById('btn-disclaimer-terms').addEventListener('click', () => openModal(legalTemplates.terms));
+
+  // Bind mobile burger menu navigation
+  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+  const mobileMenu = document.getElementById('mobile-menu');
+  
+  if (mobileMenuToggle && mobileMenu) {
+    mobileMenuToggle.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    document.querySelectorAll('.mobile-nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('hidden');
+      });
+    });
+
+    document.getElementById('mobile-api-docs').addEventListener('click', () => {
+      mobileMenu.classList.add('hidden');
+      openModal(legalTemplates.apiDocs);
+    });
+
+    document.getElementById('mobile-btn-nav-login').addEventListener('click', () => {
+      mobileMenu.classList.add('hidden');
+      navigateTo('/auth');
+    });
+  }
 
   // ========================================================================
   // BOOTSTRAP SPA ROUTING

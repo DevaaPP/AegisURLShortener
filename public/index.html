@@ -64,8 +64,8 @@
         Aegis<span class="text-teal-300 font-extrabold">URL</span>
       </a>
 
-      <!-- Home navigation links (Visible to public) -->
-      <div id="home-nav" class="flex items-center gap-6">
+      <!-- Home navigation links (Visible to public on desktop) -->
+      <div id="home-nav" class="hidden md:flex items-center gap-6">
         <a href="#features-section" class="text-xs font-semibold text-teal-100 hover:text-white transition-colors">Features</a>
         <a href="#how-it-works" class="text-xs font-semibold text-teal-100 hover:text-white transition-colors">How It Works</a>
         <a href="#faqs-section" class="text-xs font-semibold text-teal-100 hover:text-white transition-colors">FAQs</a>
@@ -80,8 +80,22 @@
         <button id="logout-btn" class="text-xs font-semibold text-rose-300 hover:text-rose-400 transition-colors">Sign Out</button>
       </div>
 
+      <!-- Burger Menu Button for Mobile -->
+      <button id="mobile-menu-toggle" class="md:hidden text-white hover:text-teal-200 text-lg focus:outline-none transition-colors">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
     </div>
   </header>
+
+  <!-- Mobile Dropdown Menu -->
+  <div id="mobile-menu" class="hidden md:hidden bg-teal-800 border-b border-teal-700 py-3 px-4 flex flex-col gap-3 text-white border-t border-teal-900/30">
+    <a href="#features-section" class="mobile-nav-link text-xs font-semibold text-teal-100 hover:text-white transition-colors">Features</a>
+    <a href="#how-it-works" class="mobile-nav-link text-xs font-semibold text-teal-100 hover:text-white transition-colors">How It Works</a>
+    <a href="#faqs-section" class="mobile-nav-link text-xs font-semibold text-teal-100 hover:text-white transition-colors">FAQs</a>
+    <button id="mobile-api-docs" class="text-left text-xs font-semibold text-teal-100 hover:text-white transition-colors">API Docs</button>
+    <button id="mobile-btn-nav-login" class="text-xs font-semibold text-white border border-teal-600 bg-teal-700 py-2 rounded hover:bg-teal-900 transition-colors w-full">Sign In</button>
+  </div>
 
   <!-- ========================================================================
        SPA VIEWPORT CONTROLLER
@@ -154,6 +168,12 @@
               <span id="shorten-btn-text">Generate Link</span>
               <div id="shorten-spinner" class="spinner hidden"></div>
             </button>
+            <p class="text-[10px] text-text-muted text-center mt-2.5">
+              By generating a link, you agree to AegisURL's 
+              <button type="button" id="btn-disclaimer-privacy" class="underline hover:text-text-primary focus:outline-none transition-colors">Privacy Policy</button> 
+              and 
+              <button type="button" id="btn-disclaimer-terms" class="underline hover:text-text-primary focus:outline-none transition-colors">Terms of Service</button>.
+            </p>
           </form>
 
           <div id="error-alert" class="alert alert-danger hidden">
@@ -168,8 +188,8 @@
               <button id="copy-btn" class="px-4 py-2.5 rounded bg-wheat-card border border-wheat-border text-text-primary text-xs font-bold hover:bg-wheat-alt transition-all">Copy</button>
             </div>
 
-            <div class="flex gap-4 items-center bg-wheat-ivory p-4 border border-wheat-border rounded">
-              <div class="qr-code-wrapper">
+            <div class="flex flex-col sm:flex-row gap-4 items-center sm:items-start text-center sm:text-left bg-wheat-ivory p-4 border border-wheat-border rounded">
+              <div class="qr-code-wrapper flex flex-col items-center">
                 <img id="qr-code-image" src="" alt="Short URL QR Code" class="w-16 h-16 bg-white p-1 rounded border border-wheat-border">
                 <span class="text-[8px] text-text-muted font-bold uppercase mt-1 tracking-wider">Scan QR</span>
               </div>
@@ -419,7 +439,7 @@ curl -X POST "https://aegis-url.vercel.app/api/v1/shorten" \
       </div>
 
       <!-- Device / Browser splits -->
-      <div class="donut-charts-row">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div class="bg-wheat-card border border-wheat-border rounded-lg p-5 shadow-premium">
           <h3 class="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-4">Device breakdown</h3>
           <div class="chart-container">
