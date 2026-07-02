@@ -194,8 +194,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const target = e.target.closest('a');
     if (target) {
       const href = target.getAttribute('href');
+      
+      // If the link targets an anchor/hash (like #features-section)
+      if (href && href.startsWith('#')) {
+        if (window.location.pathname !== '/') {
+          e.preventDefault();
+          navigateTo('/');
+          // Smooth scroll to the target element after the DOM switches views
+          setTimeout(() => {
+            const el = document.getElementById(href.substring(1));
+            if (el) {
+              el.scrollIntoView({ behavior: 'smooth' });
+            }
+          }, 100);
+        }
+      } 
       // Only intercept absolute paths in our app (not hashes on landing page or external links)
-      if (href && href.startsWith('/') && !href.startsWith('//')) {
+      else if (href && href.startsWith('/') && !href.startsWith('//')) {
         e.preventDefault();
         navigateTo(href);
       }
