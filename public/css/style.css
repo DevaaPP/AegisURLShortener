@@ -15,10 +15,10 @@
   --bg-card: hsl(40, 100%, 99%);        /* #FFFDF9 */
   --bg-alternate: hsl(36, 32%, 92%);   /* #F2EBE1 */
   
-  --color-primary: hsl(243, 75%, 59%);  /* #4F46E5 */
-  --color-primary-hover: hsl(244, 75%, 53%); /* #4338CA */
-  --color-secondary: hsl(271, 91%, 65%);/* #A855F7 */
-  --color-accent: hsl(172, 80%, 40%);   /* #14B8A6 */
+  --color-primary: hsl(172, 80%, 40%);   /* #14B8A6 (Premium Teal) */
+  --color-primary-hover: hsl(172, 80%, 32%);
+  --color-secondary: hsl(243, 75%, 59%);  /* #4F46E5 (Indigo) */
+  --color-accent: hsl(271, 91%, 65%);    /* #A855F7 (Purple) */
   
   --text-primary: hsl(30, 8%, 16%);     /* #2D2A26 */
   --text-secondary: hsl(30, 8%, 38%);   /* #6B6258 */
@@ -26,6 +26,11 @@
   
   --border-color: hsl(33, 24%, 87%);   /* #E8DED2 */
   --shadow-color: hsla(33, 24%, 22%, 0.08);
+
+  /* Premium Teal Header variables */
+  --header-bg: hsl(172, 80%, 32%);
+  --header-text: hsl(40, 40%, 98%);
+  --header-text-muted: hsla(40, 40%, 98%, 0.75);
 }
 
 body {
@@ -63,8 +68,8 @@ code, pre {
 /* Warm Grid Background Pattern */
 .grid-bg {
   background-image: 
-    linear-gradient(hsla(243, 75%, 59%, 0.015) 1px, transparent 1px),
-    linear-gradient(90deg, hsla(243, 75%, 59%, 0.015) 1px, transparent 1px);
+    linear-gradient(hsla(172, 80%, 40%, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, hsla(172, 80%, 40%, 0.015) 1px, transparent 1px);
   background-size: 28px 28px;
   background-position: center;
 }
@@ -129,4 +134,43 @@ code, pre {
 
 @keyframes fadeOut {
   to { opacity: 0; transform: translateY(-8px); }
+}
+
+/* Auth Portal Form Visibilities (Fix for displaying both forms at once) */
+.auth-form {
+  display: none !important;
+}
+
+.auth-form.active {
+  display: block !important;
+}
+
+/* SPA Viewport Transitions & Enter Animations */
+@keyframes view-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.app-view:not(.hidden) {
+  animation: view-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom transitions and hover states for a premium SaaS feel */
+.btn-premium {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-premium:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.btn-premium:active {
+  transform: translateY(0);
 }

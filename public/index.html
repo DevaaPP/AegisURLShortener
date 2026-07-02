@@ -20,11 +20,11 @@
               border: 'hsl(33, 24%, 87%)'
             },
             primary: {
-              DEFAULT: 'hsl(243, 75%, 59%)',
-              hover: 'hsl(244, 75%, 53%)'
+              DEFAULT: 'hsl(172, 80%, 40%)',
+              hover: 'hsl(172, 80%, 32%)'
             },
-            secondary: 'hsl(271, 91%, 65%)',
-            accent: 'hsl(172, 80%, 40%)',
+            secondary: 'hsl(243, 75%, 59%)',
+            accent: 'hsl(271, 91%, 65%)',
             text: {
               primary: 'hsl(30, 8%, 16%)',
               secondary: 'hsl(30, 8%, 38%)',
@@ -56,28 +56,28 @@
   <!-- ========================================================================
        TOP HEADER / NAV SYSTEM
        ========================================================================== -->
-  <header class="sticky top-0 z-50 bg-wheat-ivory/90 backdrop-blur-md border-b border-wheat-border shadow-sm">
+  <header class="sticky top-0 z-50 bg-teal-800 border-b border-teal-700 shadow-sm text-white">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       
       <!-- Logo (Typographic only, no shield logo) -->
-      <a href="/" id="brand-logo" class="text-text-primary font-bold text-lg tracking-tight hover:opacity-85 transition-opacity">
-        Aegis<span class="text-primary font-extrabold">URL</span>
+      <a href="/" id="brand-logo" class="text-white font-bold text-lg tracking-tight hover:opacity-90 transition-opacity">
+        Aegis<span class="text-teal-300 font-extrabold">URL</span>
       </a>
 
       <!-- Home navigation links (Visible to public) -->
       <div id="home-nav" class="flex items-center gap-6">
-        <a href="#features-section" class="text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors">Features</a>
-        <a href="#how-it-works" class="text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors">How It Works</a>
-        <a href="#faqs-section" class="text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors">FAQs</a>
-        <button id="nav-api-docs" class="text-xs font-semibold text-text-secondary hover:text-text-primary transition-colors">API Docs</button>
-        <button id="btn-nav-login" class="text-xs font-semibold text-text-primary border border-wheat-border bg-wheat-card px-3 py-1.5 rounded hover:bg-wheat-alt transition-colors">Sign In</button>
+        <a href="#features-section" class="text-xs font-semibold text-teal-100 hover:text-white transition-colors">Features</a>
+        <a href="#how-it-works" class="text-xs font-semibold text-teal-100 hover:text-white transition-colors">How It Works</a>
+        <a href="#faqs-section" class="text-xs font-semibold text-teal-100 hover:text-white transition-colors">FAQs</a>
+        <button id="nav-api-docs" class="text-xs font-semibold text-teal-100 hover:text-white transition-colors">API Docs</button>
+        <button id="btn-nav-login" class="text-xs font-semibold text-white border border-teal-600 bg-teal-700 px-3 py-1.5 rounded hover:bg-teal-900 transition-colors">Sign In</button>
       </div>
 
       <!-- Dashboard navigation links (Visible after authentication) -->
       <div id="dashboard-nav" class="hidden flex items-center gap-4">
-        <span id="user-email-display" class="hidden md:inline text-xs text-text-muted font-mono"></span>
-        <button id="btn-nav-dashboard" class="text-xs font-bold text-text-primary hover:underline">Console</button>
-        <button id="logout-btn" class="text-xs font-semibold text-rose-600 hover:text-rose-700 transition-colors">Sign Out</button>
+        <span id="user-email-display" class="hidden md:inline text-xs text-teal-200 font-mono"></span>
+        <button id="btn-nav-dashboard" class="text-xs font-bold text-white hover:underline">Console</button>
+        <button id="logout-btn" class="text-xs font-semibold text-rose-300 hover:text-rose-400 transition-colors">Sign Out</button>
       </div>
 
     </div>
@@ -101,7 +101,7 @@
         <p class="text-sm sm:text-base text-text-secondary mb-6 leading-relaxed">
           A secure, high-performance URL shortener designed for developers and business teams. Scan links for malware, generate offline QR codes, and log click metrics.
         </p>
-        <div class="flex items-center justify-center gap-3">
+        <div id="hero-auth-ctas" class="flex items-center justify-center gap-3">
           <button id="btn-hero-signup" class="px-6 py-2.5 rounded bg-primary hover:bg-primary-hover text-white text-xs font-bold shadow-premium transition-all">Get Started Free</button>
           <button id="btn-hero-login" class="px-6 py-2.5 rounded border border-wheat-border bg-wheat-card text-text-primary text-xs font-bold hover:bg-wheat-alt transition-all">Sign In</button>
         </div>
