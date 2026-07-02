@@ -225,21 +225,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobMenu = document.getElementById('mobile-menu');
 
     if (state.token && state.user && !isAnon) {
-      homeNav.classList.add('hidden');
-      dashboardNav.classList.remove('hidden');
+      homeNav.style.display = 'none';
+      dashboardNav.style.display = 'flex';
       userEmailDisplay.textContent = state.user.email;
       document.getElementById('hero-auth-ctas').classList.add('hidden');
-      if (mobileToggle) mobileToggle.classList.add('hidden');
-      if (mobMenu) mobMenu.classList.add('hidden');
+      if (mobileToggle) mobileToggle.style.display = 'none';
+      if (mobMenu) mobMenu.style.display = 'none';
       
       if (state.user.apiKey) {
         apiKeyDisplay.value = state.user.apiKey;
       }
     } else {
-      homeNav.classList.remove('hidden');
-      dashboardNav.classList.add('hidden');
+      homeNav.style.display = '';
+      dashboardNav.style.display = 'none';
       document.getElementById('hero-auth-ctas').classList.remove('hidden');
-      if (mobileToggle) mobileToggle.classList.remove('hidden');
+      if (mobileToggle) mobileToggle.style.display = '';
       apiKeyDisplay.value = '';
     }
   }
