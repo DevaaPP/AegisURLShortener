@@ -1,11 +1,11 @@
 /* ==========================================================================
-   AegisURL Frontend Controller (Client-Side Single-Page SaaS Engine)
+   AegisURL Frontend Controller (SPA clean URL pushState Engine)
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
   
   // ========================================================================
-  // BULLETPROOF SESSION STORAGE WRAPPER
+  // SESSION STORAGE STATE CONTROLLER
   // ========================================================================
   const safeStorage = {
     inMemory: {},
@@ -42,13 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // ========================================================================
-  // GLOBAL APPLICATION STATE
-  // ========================================================================
+  // Global State
   const state = {
     token: safeStorage.getItem('token') === 'undefined' ? null : safeStorage.getItem('token'),
     user: getSafeJSON('user'),
-    activeSection: 'shorten-section',
     charts: {
       timeline: null,
       device: null,
@@ -59,15 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // ========================================================================
   // SELECT DOM ELEMENTS
   // ========================================================================
-  const sections = document.querySelectorAll('.app-section');
-  const navLinks = document.querySelectorAll('.nav-link');
-  const navDashboard = document.getElementById('nav-dashboard');
-  const navAuth = document.getElementById('nav-auth');
-  const userProfile = document.getElementById('user-profile');
-  const userEmailSpan = document.getElementById('user-email');
+  const appViews = document.querySelectorAll('.app-view');
+  const homeNav = document.getElementById('home-nav');
+  const dashboardNav = document.getElementById('dashboard-nav');
+  const userEmailDisplay = document.getElementById('user-email-display');
   const logoutBtn = document.getElementById('logout-btn');
-  const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-  const mobileMenu = document.getElementById('mobile-menu');
+
+  const landingView = document.getElementById('landing-view');
+  const authView = document.getElementById('auth-view');
+  const dashboardView = document.getElementById('dashboard-view');
+  const analyticsView = document.getElementById('analytics-view');
 
   const shortenForm = document.getElementById('shorten-form');
   const errorAlert = document.getElementById('error-alert');
@@ -77,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const copyBtn = document.getElementById('copy-btn');
   const qrCodeImage = document.getElementById('qr-code-image');
   const anonSignupPrompt = document.getElementById('anon-signup-prompt');
-  const heroAuthCtas = document.getElementById('hero-auth-ctas');
 
   const authAlert = document.getElementById('auth-alert');
   const authErrorMessage = document.getElementById('auth-error-message');
@@ -112,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const termSingle = document.getElementById('term-single');
 
   // ========================================================================
-  // TOAST FEEDBACK NOTIFICATION SYSTEM
+  // TOAST FEEDBACK ALERTS
   // ========================================================================
   function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
@@ -121,10 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const toast = document.createElement('div');
     toast.className = `toast`;
     
-    let icon = '<i class="fa-solid fa-circle-info text-indigo-400"></i>';
-    if (type === 'success') icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
-    if (type === 'error') icon = '<i class="fa-solid fa-circle-xmark text-rose-400"></i>';
-    if (type === 'warning') icon = '<i class="fa-solid fa-triangle-exclamation text-amber-400"></i>';
+    let icon = '<i class="fa-solid fa-circle-info text-primary"></i>';
+    if (type === 'success') icon = '<i class="fa-solid fa-circle-check text-emerald-600"></i>';
+    if (type === 'error') icon = '<i class="fa-solid fa-circle-xmark text-rose-600"></i>';
+    if (type === 'warning') icon = '<i class="fa-solid fa-triangle-exclamation text-amber-500"></i>';
 
     toast.innerHTML = `${icon} <span>${message}</span>`;
     container.appendChild(toast);
@@ -138,58 +135,85 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ========================================================================
-  // SPA ROUTING & VIEW CONTROLLER
+  // CLEAN PATH SPA ROUTER (HTML5 history pushState)
   // ========================================================================
-  function handleNavigation() {
-    const hash = window.location.hash || '#shorten-section';
-    const targetSectionId = hash.split('?')[0].substring(1);
-    
-    const targetSection = document.getElementById(targetSectionId);
-    if (!targetSection) return;
+  function navigateTo(path) {
+    history.pushState(null, '', path);
+    handleRouting();
+  }
 
-    // Route guards
-    if ((targetSectionId === 'dashboard-section' || targetSectionId === 'analytics-section') && !state.token) {
-      window.location.hash = '#auth-section';
-      showToast('Authentication required to access dashboard.', 'warning');
+  function handleRouting() {
+    const path = window.location.pathname;
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+
+    // Hide all views first
+    appViews.forEach(v => v.classList.add('hidden'));
+
+    // Route guards: dashboard & analytics require authentication
+    if ((path === '/dashboard' || path === '/analytics') && !state.token) {
+      history.replaceState(null, '', '/auth');
+      authView.classList.remove('hidden');
+      updateAuthUI();
+      showToast('Authentication required.', 'warning');
       return;
     }
 
-    // Toggle Section visibility
-    sections.forEach(section => {
-      section.classList.remove('active');
-    });
-    targetSection.classList.add('active');
-
-    // Update active nav highlights
-    navLinks.forEach(link => {
-      link.classList.remove('active-nav');
-      if (link.getAttribute('href') === `#${targetSectionId}`) {
-        link.classList.add('active-nav');
+    if (path === '/auth') {
+      if (state.token && safeStorage.getItem('is_anonymous') !== 'true') {
+        history.replaceState(null, '', '/dashboard');
+        dashboardView.classList.remove('hidden');
+        loadDashboard();
+      } else {
+        authView.classList.remove('hidden');
       }
-    });
-
-    state.activeSection = targetSectionId;
-    mobileMenu.classList.add('hidden'); // Close menu on nav
-
-    if (targetSectionId === 'dashboard-section') {
-      loadDashboard();
+    } else if (path === '/dashboard') {
+      if (code) {
+        analyticsView.classList.remove('hidden');
+        loadAnalytics(code);
+      } else {
+        dashboardView.classList.remove('hidden');
+        loadDashboard();
+      }
+    } else {
+      // Default to home/landing view
+      if (path !== '/') {
+        history.replaceState(null, '', '/');
+      }
+      landingView.classList.remove('hidden');
     }
+
+    updateAuthUI();
   }
 
-  // Bind navigation links
-  document.querySelectorAll('a[href^="#"]').forEach(link => {
-    link.addEventListener('click', (e) => {
-      const href = link.getAttribute('href');
-      if (href.startsWith('#')) {
+  // Bind browser popstate (back/forward keys)
+  window.addEventListener('popstate', handleRouting);
+
+  // Intercept click on links to use router instead of reloads
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('a');
+    if (target) {
+      const href = target.getAttribute('href');
+      // Only intercept absolute paths in our app (not hashes on landing page or external links)
+      if (href && href.startsWith('/') && !href.startsWith('//')) {
         e.preventDefault();
-        window.location.hash = href;
+        navigateTo(href);
       }
-    });
+    }
   });
 
-  // Mobile menu toggle
-  mobileMenuToggle.addEventListener('click', () => {
-    mobileMenu.classList.toggle('hidden');
+  // Home navigation redirection bindings
+  document.getElementById('btn-nav-login').addEventListener('click', () => navigateTo('/auth'));
+  document.getElementById('btn-nav-dashboard').addEventListener('click', () => navigateTo('/dashboard'));
+  document.getElementById('btn-hero-login').addEventListener('click', () => navigateTo('/auth'));
+  document.getElementById('btn-hero-signup').addEventListener('click', () => {
+    navigateTo('/auth');
+    // Switch to register tab
+    tabRegister.click();
+  });
+  document.getElementById('btn-demo-signup').addEventListener('click', () => {
+    navigateTo('/auth');
+    tabRegister.click();
   });
 
   // ========================================================================
@@ -199,21 +223,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const isAnon = safeStorage.getItem('is_anonymous') === 'true';
 
     if (state.token && state.user && !isAnon) {
-      // Logged in normal user
-      navAuth.classList.add('hidden');
-      navDashboard.classList.remove('hidden');
-      userProfile.classList.remove('hidden');
-      userEmailSpan.textContent = state.user.email;
-      heroAuthCtas.classList.add('hidden');
+      homeNav.classList.add('hidden');
+      dashboardNav.classList.remove('hidden');
+      userEmailDisplay.textContent = state.user.email;
+      document.getElementById('hero-auth-ctas').classList.add('hidden');
+      
       if (state.user.apiKey) {
         apiKeyDisplay.value = state.user.apiKey;
       }
     } else {
-      // Logged out or Anonymous session
-      navAuth.classList.remove('hidden');
-      navDashboard.classList.add('hidden');
-      userProfile.classList.add('hidden');
-      heroAuthCtas.classList.remove('hidden');
+      homeNav.classList.remove('hidden');
+      dashboardNav.classList.add('hidden');
+      document.getElementById('hero-auth-ctas').classList.remove('hidden');
       apiKeyDisplay.value = '';
     }
   }
@@ -226,33 +247,56 @@ document.addEventListener('DOMContentLoaded', () => {
     state.user = null;
     updateAuthUI();
     showToast('Signed out successfully.', 'success');
-    window.location.hash = '#shorten-section';
+    navigateTo('/');
   });
 
   // ========================================================================
-  // CARD TAB TOGGLING
+  // TABS CONTROLLERS
   // ========================================================================
-  if (tabShorten && tabApi) {
-    tabShorten.addEventListener('click', () => {
-      tabShorten.classList.add('active', 'bg-slate-900', 'border-brand-border', 'text-white');
-      tabShorten.classList.remove('text-slate-400');
-      tabApi.classList.remove('active', 'bg-slate-900', 'border-brand-border', 'text-white');
-      tabApi.classList.add('text-slate-400');
-      
-      shortenFormTab.classList.remove('hidden');
-      terminalTab.classList.add('hidden');
-    });
+  
+  // URL Shortener Card Tab Toggles
+  tabShorten.addEventListener('click', () => {
+    tabShorten.classList.add('active', 'bg-wheat-alt', 'border-wheat-border', 'text-text-primary');
+    tabShorten.classList.remove('text-text-secondary');
+    tabApi.classList.remove('active', 'bg-wheat-alt', 'border-wheat-border', 'text-text-primary');
+    tabApi.classList.add('text-text-secondary');
+    
+    shortenFormTab.classList.remove('hidden');
+    terminalTab.classList.add('hidden');
+  });
 
-    tabApi.addEventListener('click', () => {
-      tabApi.classList.add('active', 'bg-slate-900', 'border-brand-border', 'text-white');
-      tabApi.classList.remove('text-slate-400');
-      tabShorten.classList.remove('active', 'bg-slate-900', 'border-brand-border', 'text-white');
-      tabShorten.classList.add('text-slate-400');
-      
-      terminalTab.classList.remove('hidden');
-      shortenFormTab.classList.add('hidden');
-    });
-  }
+  tabApi.addEventListener('click', () => {
+    tabApi.classList.add('active', 'bg-wheat-alt', 'border-wheat-border', 'text-text-primary');
+    tabApi.classList.remove('text-text-secondary');
+    tabShorten.classList.remove('active', 'bg-wheat-alt', 'border-wheat-border', 'text-text-primary');
+    tabShorten.classList.add('text-text-secondary');
+    
+    terminalTab.classList.remove('hidden');
+    shortenFormTab.classList.add('hidden');
+  });
+
+  // Auth Tab Toggles
+  tabLogin.addEventListener('click', () => {
+    tabLogin.classList.add('active', 'bg-wheat-alt', 'border-wheat-border', 'text-text-primary');
+    tabLogin.classList.remove('text-text-secondary');
+    tabRegister.classList.remove('active', 'bg-wheat-alt', 'border-wheat-border', 'text-text-primary');
+    tabRegister.classList.add('text-text-secondary');
+    
+    loginForm.classList.add('active');
+    registerForm.classList.remove('active');
+    authAlert.classList.add('hidden');
+  });
+
+  tabRegister.addEventListener('click', () => {
+    tabRegister.classList.add('active', 'bg-wheat-alt', 'border-wheat-border', 'text-text-primary');
+    tabRegister.classList.remove('text-text-secondary');
+    tabLogin.classList.remove('active', 'bg-wheat-alt', 'border-wheat-border', 'text-text-primary');
+    tabLogin.classList.add('text-text-secondary');
+    
+    registerForm.classList.add('active');
+    loginForm.classList.remove('active');
+    authAlert.classList.add('hidden');
+  });
 
   // ========================================================================
   // INTERACTIVE API CURL GENERATOR
@@ -299,7 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ========================================================================
-  // FAQS ACCORDION ENGINE
+  // FAQ ACCORDIONS
   // ========================================================================
   document.querySelectorAll('.faq-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -307,7 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const icon = btn.querySelector('.fa-chevron-down');
       
       content.classList.toggle('open');
-      
       if (content.classList.contains('open')) {
         icon.style.transform = 'rotate(180deg)';
       } else {
@@ -317,23 +360,21 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ========================================================================
-  // PUBLIC LIVE DEMO / ANONYMOUS SESSION BUILDER
+  // PUBLIC ANONYMOUS SESSION BUILDER
   // ========================================================================
   async function registerAnonymousSession() {
     const randomId = Math.floor(Math.random() * 1000000);
     const email = `anon-${randomId}@aegisurl.demo`;
     const password = `DemoSecretPass_${randomId}_$`;
 
-    // 1. Create anonymous database record
     const regResp = await fetch('/api/v1/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
 
-    if (!regResp.ok) throw new Error('Registration failed for anonymous session.');
+    if (!regResp.ok) throw new Error('Failed to start anonymous session.');
 
-    // 2. Authorize token
     const loginResp = await fetch('/api/v1/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -343,7 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = await loginResp.json();
     if (!loginResp.ok) throw new Error('Failed to authorize anonymous session.');
 
-    // Save as anonymous state
     safeStorage.setItem('token', data.token);
     safeStorage.setItem('user', JSON.stringify(data.user));
     safeStorage.setItem('is_anonymous', 'true');
@@ -352,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ========================================================================
-  // CORE URL SHORTENING OPERATION
+  // URL SHORTENING EXECUTION
   // ========================================================================
   shortenForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -360,15 +400,12 @@ document.addEventListener('DOMContentLoaded', () => {
     resultBox.classList.add('hidden');
     anonSignupPrompt.classList.add('hidden');
 
-    // UI Loading state
     const submitBtn = document.getElementById('shorten-submit');
     const btnText = document.getElementById('shorten-btn-text');
     const spinner = document.getElementById('shorten-spinner');
-    const arrow = document.getElementById('shorten-arrow');
 
-    btnText.textContent = 'Securing Redirection...';
+    btnText.textContent = 'Generating...';
     spinner.classList.remove('hidden');
-    arrow.classList.add('hidden');
     submitBtn.disabled = true;
 
     const targetUrl = targetUrlInput.value;
@@ -377,7 +414,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const allowSingleUse = singleUseCheckbox.checked;
 
     try {
-      // If user has no token, spin up an anonymous demo session instantly
       if (!state.token) {
         await registerAnonymousSession();
       }
@@ -397,22 +433,17 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || data.message || 'Failed to shorten URL.');
 
-      if (!response.ok) {
-        throw new Error(data.error || data.message || 'Redirection generation failed.');
-      }
-
-      // Display short link
       shortenedUrlInput.value = data.short_url;
       qrCodeImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(data.short_url)}`;
       resultBox.classList.remove('hidden');
       
-      // If anonymous, show the warning panel encouraging sign-up
       if (safeStorage.getItem('is_anonymous') === 'true') {
         anonSignupPrompt.classList.remove('hidden');
       }
 
-      showToast('Link secured successfully!', 'success');
+      showToast('Link created successfully!', 'success');
       shortenForm.reset();
       updateApiRequestTerminal();
     } catch (err) {
@@ -420,53 +451,22 @@ document.addEventListener('DOMContentLoaded', () => {
       errorAlert.classList.remove('hidden');
       showToast(err.message, 'error');
     } finally {
-      btnText.textContent = 'Generate Secure Link';
+      btnText.textContent = 'Generate Link';
       spinner.classList.add('hidden');
-      arrow.classList.remove('hidden');
       submitBtn.disabled = false;
     }
   });
 
-  // Copy button
+  // Copy short URL
   copyBtn.addEventListener('click', () => {
     shortenedUrlInput.select();
-    shortenedUrlInput.setSelectionRange(0, 99999);
     navigator.clipboard.writeText(shortenedUrlInput.value);
-
-    const origText = copyBtn.innerHTML;
-    copyBtn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> Copied';
     showToast('Copied to clipboard!', 'success');
-    setTimeout(() => {
-      copyBtn.innerHTML = origText;
-    }, 2000);
   });
 
   // ========================================================================
-  // DEV PORTAL AUTHENTICATION HANDLERS
+  // LOGIN / REGISTER OPERATIONS
   // ========================================================================
-  tabLogin.addEventListener('click', () => {
-    tabLogin.classList.add('active', 'bg-slate-900', 'border-brand-border', 'text-white');
-    tabLogin.classList.remove('text-slate-400');
-    tabRegister.classList.remove('active', 'bg-slate-900', 'border-brand-border', 'text-white');
-    tabRegister.classList.add('text-slate-400');
-    
-    loginForm.classList.add('active');
-    registerForm.classList.remove('active');
-    authAlert.classList.add('hidden');
-  });
-
-  tabRegister.addEventListener('click', () => {
-    tabRegister.classList.add('active', 'bg-slate-900', 'border-brand-border', 'text-white');
-    tabRegister.classList.remove('text-slate-400');
-    tabLogin.classList.remove('active', 'bg-slate-900', 'border-brand-border', 'text-white');
-    tabLogin.classList.add('text-slate-400');
-    
-    registerForm.classList.add('active');
-    loginForm.classList.remove('active');
-    authAlert.classList.add('hidden');
-  });
-
-  // Login execution
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     authAlert.classList.add('hidden');
@@ -482,20 +482,16 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const data = await response.json();
+      if (!response.ok) throw new Error(data.error || data.message || 'Credentials incorrect.');
 
-      if (!response.ok) throw new Error(data.error || data.message || 'Login credentials incorrect.');
-
-      // Clear any previous demo state
       safeStorage.removeItem('is_anonymous');
-
       safeStorage.setItem('token', data.token);
       safeStorage.setItem('user', JSON.stringify(data.user));
       state.token = data.token;
       state.user = data.user;
       
-      updateAuthUI();
-      showToast('Welcome back, Developer!', 'success');
-      window.location.hash = '#dashboard-section';
+      showToast('Welcome back!', 'success');
+      navigateTo('/dashboard');
       loginForm.reset();
     } catch (err) {
       authErrorMessage.textContent = err.message;
@@ -504,7 +500,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Register execution
   registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     authAlert.classList.add('hidden');
@@ -522,15 +517,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || data.message || 'Registration failed.');
 
-      // Auto login
+      // Login
       const loginResp = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
       const loginData = await loginResp.json();
-
-      if (!loginResp.ok) throw new Error(loginData.error || 'Failed to auto-authenticate new account.');
+      if (!loginResp.ok) throw new Error(loginData.error || 'Auto-login failed.');
 
       safeStorage.removeItem('is_anonymous');
       safeStorage.setItem('token', loginData.token);
@@ -538,9 +532,8 @@ document.addEventListener('DOMContentLoaded', () => {
       state.token = loginData.token;
       state.user = loginData.user;
 
-      updateAuthUI();
-      showToast('Developer account established successfully!', 'success');
-      window.location.hash = '#dashboard-section';
+      showToast('Account established successfully!', 'success');
+      navigateTo('/dashboard');
       registerForm.reset();
     } catch (err) {
       authErrorMessage.textContent = err.message;
@@ -550,10 +543,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ========================================================================
-  // DEVELOPER DASHBOARD METRICS & INVENTORY
+  // DEVELOPER DASHBOARD OPERATIONS
   // ========================================================================
   async function loadDashboard() {
-    linksTableBody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-500">Loading links...</td></tr>';
+    linksTableBody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-text-muted">Loading registry...</td></tr>';
     
     try {
       const response = await fetch('/api/v1/links', {
@@ -561,12 +554,12 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Authorization': `Bearer ${state.token}` }
       });
 
-      if (!response.ok) throw new Error('Authorization expired.');
+      if (!response.ok) throw new Error('Session expired.');
 
       const data = await response.json();
       
       if (data.links.length === 0) {
-        linksTableBody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-500">No shortcodes configured. Start by shortening a link!</td></tr>';
+        linksTableBody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-text-muted">No shortcodes. Generate a link to get started!</td></tr>';
         return;
       }
 
@@ -575,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const shortUrl = `${window.location.protocol}//${window.location.host}/${link.short_code}`;
         const createdDate = new Date(link.created_at).toLocaleDateString();
         
-        let expiry = '<span class="text-slate-500">Permanent</span>';
+        let expiry = '<span class="text-text-muted">Permanent</span>';
         if (link.expires_at) {
           const expired = new Date(link.expires_at).getTime() < Date.now();
           expiry = expired 
@@ -583,45 +576,42 @@ document.addEventListener('DOMContentLoaded', () => {
             : new Date(link.expires_at).toLocaleDateString();
         }
         if (link.allow_single_use) {
-          expiry = `<span class="badge badge-info"><i class="fa-solid fa-bolt-lightning text-amber-400"></i> Single-Use</span>`;
+          expiry = `<span class="badge badge-info">Single-Use</span>`;
         }
 
         const activeStatus = link.is_active ? '' : ' opacity-40 line-through';
 
         const row = document.createElement('tr');
-        row.className = 'hover:bg-slate-900/40 transition-colors';
+        row.className = 'hover:bg-wheat-alt/50 transition-colors border-b border-wheat-border';
         row.innerHTML = `
-          <td class="py-3 px-4 font-mono font-bold text-indigo-300${activeStatus}"><a href="${shortUrl}" target="_blank">${link.short_code}</a></td>
-          <td class="py-3 px-4 text-slate-400">${createdDate}</td>
-          <td class="py-3 px-4">${expiry}</td>
-          <td class="py-3 px-4"><span class="badge badge-secondary">${link.total_clicks} redirections</span></td>
-          <td class="py-3 px-4">
-            <button class="btn btn-secondary btn-sm analytics-btn flex items-center gap-1" data-code="${link.short_code}">
-              <i class="fa-solid fa-chart-simple text-indigo-400"></i> Metrics
+          <td class="py-3.5 px-4 font-mono font-bold text-primary${activeStatus}"><a href="${shortUrl}" target="_blank">${link.short_code}</a></td>
+          <td class="py-3.5 px-4 text-text-secondary">${createdDate}</td>
+          <td class="py-3.5 px-4">${expiry}</td>
+          <td class="py-3.5 px-4"><span class="badge badge-secondary">${link.total_clicks} clicks</span></td>
+          <td class="py-3.5 px-4">
+            <button class="px-2.5 py-1 rounded border border-wheat-border bg-wheat-card hover:bg-wheat-alt text-text-primary font-bold text-[10px] uppercase tracking-wider analytics-btn" data-code="${link.short_code}">
+              Metrics
             </button>
           </td>
         `;
         linksTableBody.appendChild(row);
       });
 
-      // Bind metrics buttons
       document.querySelectorAll('.analytics-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const code = btn.getAttribute('data-code');
-          window.location.hash = `#analytics-section?code=${code}`;
+          navigateTo(`/dashboard?code=${code}`);
         });
       });
 
     } catch (err) {
       console.error(err);
-      linksTableBody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-rose-400">Failed to load registry.</td></tr>';
-      showToast('Session expired. Please sign in again.', 'error');
+      linksTableBody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-rose-600">Failed to load active shortcodes.</td></tr>';
     }
   }
 
   refreshLinksBtn.addEventListener('click', loadDashboard);
 
-  // Toggle API Key visibility
   toggleKeyVisibility.addEventListener('click', () => {
     if (apiKeyDisplay.type === 'password') {
       apiKeyDisplay.type = 'text';
@@ -632,21 +622,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Copy API key to clipboard
   copyKeyBtn.addEventListener('click', () => {
     apiKeyDisplay.select();
     navigator.clipboard.writeText(apiKeyDisplay.value);
-    showToast('API Key copied to clipboard!', 'success');
+    showToast('API Key copied successfully!', 'success');
   });
 
   // ========================================================================
-  // CLICK ANALYTICS CHARTING & GRAPHS
+  // CLICK METRICS VISUALS (CHART.JS)
   // ========================================================================
   async function loadAnalytics(code) {
     document.getElementById('analytics-code-title').textContent = code;
-
     const geoTableBody = document.getElementById('geo-table-body');
-    geoTableBody.innerHTML = '<tr><td colspan="2" class="py-4 text-center text-slate-500">Loading geo metrics...</td></tr>';
+    geoTableBody.innerHTML = '<tr><td colspan="2" class="py-4 text-center text-text-muted">Loading metrics...</td></tr>';
 
     try {
       const response = await fetch(`/api/v1/analytics/${code}`, {
@@ -661,35 +649,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Populate geo list
       if (metrics.breakdown.countries.length === 0) {
-        geoTableBody.innerHTML = '<tr><td colspan="2" class="py-4 text-center text-slate-500">No clicks registered yet.</td></tr>';
+        geoTableBody.innerHTML = '<tr><td colspan="2" class="py-4 text-center text-text-muted">No click events recorded.</td></tr>';
       } else {
         geoTableBody.innerHTML = '';
         metrics.breakdown.countries.forEach(row => {
           const tr = document.createElement('tr');
+          tr.className = 'border-b border-wheat-border';
           tr.innerHTML = `
-            <td class="py-2.5 px-4 font-semibold text-slate-300">${row.country}</td>
-            <td class="py-2.5 px-4 text-right"><span class="badge badge-secondary">${row.count} clicks</span></td>
+            <td class="py-2.5 px-4 font-semibold text-text-primary">${row.country}</td>
+            <td class="py-2.5 px-4 text-right text-text-secondary"><span class="badge badge-secondary">${row.count} clicks</span></td>
           `;
           geoTableBody.appendChild(tr);
         });
       }
 
-      // Render charts
       renderTimelineChart(metrics.timeline);
       renderPieChart('device-chart', 'device', metrics.breakdown.devices);
       renderPieChart('browser-chart', 'browser', metrics.breakdown.browsers);
 
     } catch (err) {
       console.error(err);
-      showToast('Failed to fetch click metrics.', 'error');
+      showToast('Failed to retrieve analytics metrics.', 'error');
     }
   }
 
   backToDashboardBtn.addEventListener('click', () => {
-    window.location.hash = '#dashboard-section';
+    navigateTo('/dashboard');
   });
 
-  // Timeline chart
   function renderTimelineChart(timelineData) {
     const ctx = document.getElementById('timeline-chart').getContext('2d');
     
@@ -705,30 +692,26 @@ document.addEventListener('DOMContentLoaded', () => {
       data: {
         labels: labels,
         datasets: [{
-          label: 'Redirections',
           data: data,
-          borderColor: '#6366f1',
-          backgroundColor: 'rgba(99, 102, 241, 0.05)',
+          borderColor: '#4F46E5', // Warm Premium Indigo
+          backgroundColor: 'hsla(243, 75%, 59%, 0.05)',
           fill: true,
-          tension: 0.35,
+          tension: 0.3,
           borderWidth: 2
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
-        },
+        plugins: { legend: { display: false } },
         scales: {
-          y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#71717a' } },
-          x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#71717a' } }
+          y: { grid: { color: 'hsl(33, 24%, 87%)' }, ticks: { color: '#6B6258' } },
+          x: { grid: { color: 'hsl(33, 24%, 87%)' }, ticks: { color: '#6B6258' } }
         }
       }
     });
   }
 
-  // Device/Browser Pie charts
   function renderPieChart(canvasId, chartKey, breakdownData) {
     const ctx = document.getElementById(canvasId).getContext('2d');
 
@@ -739,7 +722,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const labels = breakdownData.map(d => d[chartKey]);
     const counts = breakdownData.map(d => d.count);
 
-    const colors = ['#6366f1', '#a855f7', '#10b981', '#3b82f6', '#ef4444', '#f59e0b'];
+    const colors = ['#4F46E5', '#A855F7', '#14B8A6', '#F59E0B', '#EF4444', '#6B6258'];
 
     state.charts[chartKey] = new Chart(ctx, {
       type: 'doughnut',
@@ -757,16 +740,16 @@ document.addEventListener('DOMContentLoaded', () => {
         plugins: {
           legend: { 
             position: 'right',
-            labels: { color: '#d4d4d8', font: { size: 10 } }
+            labels: { color: '#6B6258', font: { size: 10 } }
           }
         },
-        cutout: '60%'
+        cutout: '65%'
       }
     });
   }
 
   // ========================================================================
-  // MODAL OVERLAYS ENGINE (LEGAL DOCUMENTS & DOCS MOCKS)
+  // OVERLAY POLICY MODALS (Clean Bolding with HTML strong tags)
   // ========================================================================
   const modalOverlay = document.getElementById('modal-overlay');
   const modalCloseBtn = document.getElementById('modal-close-btn');
@@ -787,153 +770,104 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === modalOverlay) closeModal();
   });
 
-  // Modal content templates
   const legalTemplates = {
     privacy: `
-      <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-1.5"><i class="fa-solid fa-user-shield text-indigo-400"></i> Privacy & Data Policy</h2>
-      <p class="text-slate-400 text-xs">Last Updated: July 2026</p>
+      <h2 class="text-base font-bold text-text-primary mb-2">Privacy & Data Policy</h2>
+      <p class="text-text-muted text-[10px] uppercase font-bold tracking-wider">Last Updated: July 2026</p>
       <div class="space-y-3 mt-4 text-xs">
-        <p>AegisURL is designed with a **privacy-first** approach. We collect click analytics metadata solely to generate statistics for developer dashboards. We do not place cookies on redirect visitors, nor do we build advertising profiles.</p>
-        <h3 class="font-semibold text-slate-200 mt-2">1. Data We Collect</h3>
-        <p>For redirection analytics, we record: IP Addresses (hashed locally for privacy), User-Agent details (OS, Browser, Device Type), Geolocation (based on Vercel CDN header inputs), and HTTP referrers. We do not correlate click information with personal identities.</p>
-        <h3 class="font-semibold text-slate-200 mt-2">2. Data Security</h3>
-        <p>All shortened URLs and destination targets are stored on disk inside secure PostgreSQL clusters encrypted using industry-standard **AES-256-GCM** keys to prevent directory data leaks.</p>
+        <p>AegisURL is engineered to be <strong>privacy-first</strong>. We do not place user tracking cookies on visitors during redirection, nor do we build profiles to target advertising.</p>
+        <h3 class="font-bold text-text-primary mt-3 text-[10px] uppercase tracking-wider">1. Click Analytics Data</h3>
+        <p>To compile metrics for the developer panel, we record: hashed IP addresses, browser agent strings (OS, browser, device type), geolocation (mapped at the Vercel edge), and HTTP referrers.</p>
+        <h3 class="font-bold text-text-primary mt-3 text-[10px] uppercase tracking-wider">2. Data Security</h3>
+        <p>All active destination target mapping rows are stored securely on disk inside PostgreSQL clusters encrypted with <strong>AES-256-GCM</strong> cipher keys.</p>
       </div>
     `,
     terms: `
-      <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-1.5"><i class="fa-solid fa-file-contract text-indigo-400"></i> Terms of Service</h2>
-      <p class="text-slate-400 text-xs">Last Updated: July 2026</p>
+      <h2 class="text-base font-bold text-text-primary mb-2">Terms of Service</h2>
+      <p class="text-text-muted text-[10px] uppercase font-bold tracking-wider">Last Updated: July 2026</p>
       <div class="space-y-3 mt-4 text-xs">
-        <p>Welcome to AegisURL. By creating short links on our platform, you agree to these service conditions.</p>
-        <h3 class="font-semibold text-slate-200 mt-2">1. Acceptable Content</h3>
-        <p>You may not shorten URLs that point to illegal content, malware payloads, credential harvesting forms (phishing), or unsolicited commercial message triggers (spam). AegisURL uses Google Safe Browsing and automatically disables flagged items.</p>
-        <h3 class="font-semibold text-slate-200 mt-2">2. Rate Limits</h3>
-        <p>To ensure fair distribution and avoid server exhaust, public shortening endpoints are limited to 30 requests per minute. Accounts violating these rates programmatically will be throttled.</p>
+        <p>By creating shortened links on AegisURL, you agree to comply with our service requirements.</p>
+        <h3 class="font-bold text-text-primary mt-3 text-[10px] uppercase tracking-wider">1. Acceptable Content</h3>
+        <p>You are strictly prohibited from shortening links pointing to phishing campaigns, malware repositories, viruses, or unsolicited messaging vectors (spam). All links are scanned by Google Safe Browsing and disabled instantly if flagged.</p>
+        <h3 class="font-bold text-text-primary mt-3 text-[10px] uppercase tracking-wider">2. Service Limitations</h3>
+        <p>To protect system availability, API requests are subject to rate limiting of 30 requests per minute.</p>
       </div>
     `,
     cookies: `
-      <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-1.5"><i class="fa-solid fa-cookie-bite text-indigo-400"></i> Cookie Policy</h2>
-      <p class="text-slate-400 text-xs">Last Updated: July 2026</p>
+      <h2 class="text-base font-bold text-text-primary mb-2">Cookie Usage Policy</h2>
+      <p class="text-text-muted text-[10px] uppercase font-bold tracking-wider">Last Updated: July 2026</p>
       <div class="space-y-3 mt-4 text-xs">
-        <p>AegisURL utilizes cookies to manage your developer login session on the SaaS dashboard. We **do not** write cookies during user redirection.</p>
-        <h3 class="font-semibold text-slate-200 mt-2">1. System Cookies</h3>
-        <p>We use temporary tokens (in LocalStorage or secure Session Cookies) to verify your dashboard session. These cookies are essential to display active links and allow access to metrics.</p>
+        <p>AegisURL uses essential cookies to authenticate developer login sessions on the dashboard console. We <strong>do not</strong> write cookies when users are redirected through shortlinks.</p>
       </div>
     `,
     acceptable: `
-      <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-1.5"><i class="fa-solid fa-ban text-indigo-400"></i> Acceptable Use & Abuse Report Policy</h2>
-      <p class="text-slate-400 text-xs">Last Updated: July 2026</p>
+      <h2 class="text-base font-bold text-text-primary mb-2">Acceptable Use & Abuse Report</h2>
+      <p class="text-text-muted text-[10px] uppercase font-bold tracking-wider">Last Updated: July 2026</p>
       <div class="space-y-3 mt-4 text-xs">
-        <p>Our platform enforces a strict zero-abuse policy to keep short links safe for users across the internet.</p>
-        <h3 class="font-semibold text-slate-200 mt-2">1. Reporting Abuse</h3>
-        <p>If you encounter an AegisURL short link pointing to harmful resources (phishing, virus, illegal content), please report it to us immediately via our support center or email ` + "`abuse@aegisurl.com`" + `. Reported links will be reviewed and removed within 12 hours.</p>
+        <p>AegisURL maintains a zero-tolerance policy against malicious or illegal link redirects.</p>
+        <h3 class="font-bold text-text-primary mt-3 text-[10px] uppercase tracking-wider">1. Report Abuse</h3>
+        <p>To report an active AegisURL short link pointing to harmful resources, contact our team immediately at <strong>abuse@aegisurl.com</strong>. Flagged items will be reviewed and removed within 12 hours.</p>
       </div>
     `,
     apiDocs: `
-      <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-1.5"><i class="fa-solid fa-code text-indigo-400"></i> Developer REST API Specifications</h2>
+      <h2 class="text-base font-bold text-text-primary mb-2">REST API Integration Specifications</h2>
       <div class="space-y-3 mt-4 text-xs">
-        <p>Integrate AegisURL directly into your scripts or backends. Make JSON requests using your Developer API key.</p>
-        <h3 class="font-semibold text-slate-200 mt-2">Headers Required:</h3>
-        <pre class="bg-black/60 p-2.5 rounded font-mono border border-brand-border text-slate-300">
+        <p>Integrate AegisURL programmatically using your developer secret key.</p>
+        <h3 class="font-bold text-text-primary text-[10px] uppercase tracking-wider">Authentication Header:</h3>
+        <pre class="bg-wheat-ivory p-3 rounded font-mono border border-wheat-border text-text-primary">
 X-API-Key: &lt;YOUR_API_KEY&gt;
 Content-Type: application/json</pre>
-        <h3 class="font-semibold text-slate-200 mt-2">1. Shorten Link Endpoint</h3>
-        <pre class="bg-black/60 p-2.5 rounded font-mono border border-brand-border text-indigo-300">
+        <h3 class="font-bold text-text-primary text-[10px] uppercase tracking-wider">Endpoint:</h3>
+        <pre class="bg-wheat-ivory p-3 rounded font-mono border border-wheat-border text-primary font-bold">
 POST /api/v1/shorten</pre>
-        <p class="text-slate-400 font-bold">Request Body JSON Schema:</p>
-        <pre class="bg-black/60 p-2.5 rounded font-mono border border-brand-border text-slate-300">
+        <h3 class="font-bold text-text-primary text-[10px] uppercase tracking-wider">JSON Body Schema:</h3>
+        <pre class="bg-wheat-ivory p-3 rounded font-mono border border-wheat-border text-text-secondary">
 {
   "targetUrl": "https://dest.com",
-  "customCode": "optional_alias",
+  "customCode": "custom_alias",
   "expiresInSecs": 86400,
   "allowSingleUse": false
-}</pre>
-        <p class="text-slate-400 font-bold">Successful Response JSON (201 Created):</p>
-        <pre class="bg-black/60 p-2.5 rounded font-mono border border-brand-border text-slate-300">
-{
-  "success": true,
-  "short_code": "optional_alias",
-  "short_url": "https://ae.gs/optional_alias",
-  "expires_at": "2026-07-03T16:00:00.000Z"
 }</pre>
       </div>
     `,
     contact: `
-      <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-1.5"><i class="fa-solid fa-circle-question text-indigo-400"></i> Contact Support Center</h2>
-      <p class="text-slate-400 text-xs mb-4">Have an inquiry or want to report abuse? Register a support ticket below.</p>
-      
+      <h2 class="text-base font-bold text-text-primary mb-2">Developer Support Desk</h2>
+      <p class="text-text-secondary text-xs mb-4">Register a support inquiry or abuse report ticket below.</p>
       <form id="modal-contact-form" class="space-y-3">
         <div class="flex flex-col gap-1">
-          <label class="text-[10px] font-bold uppercase text-slate-400">Name</label>
-          <input type="text" id="contact-name" required placeholder="Alex Dev" class="bg-brand-dark border border-brand-border rounded px-3 py-2 text-xs text-white focus:border-indigo-500 outline-none w-full">
+          <label class="text-[9px] font-bold uppercase text-text-muted">Name</label>
+          <input type="text" id="contact-name" required placeholder="Alex Dev" class="bg-wheat-ivory border border-wheat-border rounded px-3 py-2 text-xs text-text-primary focus:border-primary outline-none w-full">
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-[10px] font-bold uppercase text-slate-400">Email Address</label>
-          <input type="email" id="contact-email" required placeholder="alex@company.com" class="bg-brand-dark border border-brand-border rounded px-3 py-2 text-xs text-white focus:border-indigo-500 outline-none w-full">
+          <label class="text-[9px] font-bold uppercase text-text-muted">Email Address</label>
+          <input type="email" id="contact-email" required placeholder="alex@company.com" class="bg-wheat-ivory border border-wheat-border rounded px-3 py-2 text-xs text-text-primary focus:border-primary outline-none w-full">
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-[10px] font-bold uppercase text-slate-400">Message Description</label>
-          <textarea id="contact-msg" required rows="3" placeholder="Describe your issue or links report details..." class="bg-brand-dark border border-brand-border rounded px-3 py-2 text-xs text-white focus:border-indigo-500 outline-none w-full"></textarea>
+          <label class="text-[9px] font-bold uppercase text-text-muted">Message Details</label>
+          <textarea id="contact-msg" required rows="3" placeholder="Explain your inquiry details..." class="bg-wheat-ivory border border-wheat-border rounded px-3 py-2 text-xs text-text-primary focus:border-primary outline-none w-full"></textarea>
         </div>
-        <button type="submit" class="w-full py-2.5 rounded bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs">Submit Ticket</button>
+        <button type="submit" class="w-full py-2.5 rounded bg-primary hover:bg-primary-hover text-white font-bold text-xs shadow-premium">Submit Ticket</button>
       </form>
     `
   };
 
-  // Bind footer modals
+  // Bind footer buttons
   document.getElementById('btn-show-privacy').addEventListener('click', () => openModal(legalTemplates.privacy));
   document.getElementById('btn-show-terms').addEventListener('click', () => openModal(legalTemplates.terms));
   document.getElementById('btn-show-cookies').addEventListener('click', () => openModal(legalTemplates.cookies));
   document.getElementById('btn-show-acceptable').addEventListener('click', () => openModal(legalTemplates.acceptable));
-  document.getElementById('nav-api-docs').addEventListener('click', (e) => {
-    e.preventDefault();
-    openModal(legalTemplates.apiDocs);
-  });
+  document.getElementById('nav-api-docs').addEventListener('click', () => openModal(legalTemplates.apiDocs));
   document.getElementById('btn-show-contact').addEventListener('click', () => {
     openModal(legalTemplates.contact);
-    
-    // Bind submission event dynamically
-    const cForm = document.getElementById('modal-contact-form');
-    cForm.addEventListener('submit', (e) => {
+    document.getElementById('modal-contact-form').addEventListener('submit', (e) => {
       e.preventDefault();
       closeModal();
-      showToast('Support ticket registered. We will reply within 24 hours.', 'success');
+      showToast('Support ticket registered successfully.', 'success');
     });
   });
 
   // ========================================================================
-  // ROUTING NAVIGATION INTERCEPTOR
+  // BOOTSTRAP SPA ROUTING
   // ========================================================================
-  function handleHashWithParams() {
-    const hash = window.location.hash || '#shorten-section';
-    
-    if (hash.startsWith('#analytics-section')) {
-      const urlParts = hash.split('?');
-      if (urlParts.length > 1) {
-        const queryParams = new URLSearchParams(urlParts[1]);
-        const code = queryParams.get('code');
-        if (code) {
-          sections.forEach(s => s.classList.remove('active'));
-          document.getElementById('analytics-section').classList.add('active');
-          navLinks.forEach(l => l.classList.remove('active-nav'));
-          navDashboard.classList.add('active-nav');
-          
-          state.activeSection = 'analytics-section';
-          loadAnalytics(code);
-          return;
-        }
-      }
-    }
-
-    handleNavigation();
-  }
-
-  window.addEventListener('hashchange', handleHashWithParams);
-
-  // ========================================================================
-  // INITIALIZE UI & ROUTING RUNTIME
-  // ========================================================================
-  updateAuthUI();
-  handleHashWithParams();
-  updateApiRequestTerminal();
+  handleRouting();
 });

@@ -5,6 +5,14 @@
       "destination": "/api/index"
     },
     {
+      "source": "/auth",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/index.html"
+    },
+    {
       "source": "/:code",
       "destination": "/api/index"
     }

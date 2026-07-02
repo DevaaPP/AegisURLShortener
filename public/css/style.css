@@ -1,5 +1,5 @@
 /* ==========================================================================
-   AegisURL Premium SaaS Theme Overrides (Tailwind Helper Stylesheet)
+   AegisURL Warm Premium Theme Overrides (HSL Core Variables & Custom Styles)
    ========================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -8,17 +8,36 @@
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-title: 'Outfit', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  /* HSL Design Tokens (Warm Premium Soft Wheat theme) */
+  --bg-wheat: hsl(38, 32%, 95%);       /* #F8F4EC */
+  --bg-ivory: hsl(40, 40%, 98%);       /* #FDFBF7 */
+  --bg-card: hsl(40, 100%, 99%);        /* #FFFDF9 */
+  --bg-alternate: hsl(36, 32%, 92%);   /* #F2EBE1 */
+  
+  --color-primary: hsl(243, 75%, 59%);  /* #4F46E5 */
+  --color-primary-hover: hsl(244, 75%, 53%); /* #4338CA */
+  --color-secondary: hsl(271, 91%, 65%);/* #A855F7 */
+  --color-accent: hsl(172, 80%, 40%);   /* #14B8A6 */
+  
+  --text-primary: hsl(30, 8%, 16%);     /* #2D2A26 */
+  --text-secondary: hsl(30, 8%, 38%);   /* #6B6258 */
+  --text-muted: hsl(30, 8%, 57%);       /* #9A9187 */
+  
+  --border-color: hsl(33, 24%, 87%);   /* #E8DED2 */
+  --shadow-color: hsla(33, 24%, 22%, 0.08);
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: #030408;
-  color: #f4f4f5;
+  background-color: var(--bg-wheat);
+  color: var(--text-secondary);
   overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-title);
+  color: var(--text-primary);
 }
 
 code, pre {
@@ -31,42 +50,26 @@ code, pre {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #030408;
+  background: var(--bg-wheat);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1f2029;
+  background: var(--border-color);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2e2f3d;
+  background: var(--text-muted);
 }
 
-/* Grid Background Overlay */
+/* Warm Grid Background Pattern */
 .grid-bg {
   background-image: 
-    linear-gradient(rgba(99, 102, 241, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(99, 102, 241, 0.02) 1px, transparent 1px);
-  background-size: 32px 32px;
+    linear-gradient(hsla(243, 75%, 59%, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, hsla(243, 75%, 59%, 0.015) 1px, transparent 1px);
+  background-size: 28px 28px;
   background-position: center;
 }
 
-/* Glow Blob Animations */
-@keyframes blob-drift {
-  0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.95); }
-  100% { transform: translate(0px, 0px) scale(1); }
-}
-
-.animate-blob-1 {
-  animation: blob-drift 10s infinite alternate ease-in-out;
-}
-
-.animate-blob-2 {
-  animation: blob-drift 14s infinite alternate-reverse ease-in-out;
-}
-
-/* Accordion slide animation */
+/* Accordion slide details */
 .accordion-content {
   max-height: 0;
   overflow: hidden;
@@ -78,10 +81,10 @@ code, pre {
   padding-bottom: 1rem;
 }
 
-/* Custom Spinner */
+/* Loader indicator */
 .spinner {
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  border-left-color: #6366f1;
+  border: 2px solid hsla(30, 8%, 16%, 0.1);
+  border-left-color: var(--color-primary);
   border-radius: 50%;
   width: 18px;
   height: 18px;
@@ -92,7 +95,7 @@ code, pre {
   to { transform: rotate(360deg); }
 }
 
-/* Toast Container */
+/* Toast System styling */
 #toast-container {
   position: fixed;
   bottom: 24px;
@@ -106,13 +109,13 @@ code, pre {
 
 .toast {
   pointer-events: auto;
-  background: #09090b;
-  border: 1px solid #27272a;
-  color: #fafafa;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   padding: 10px 14px;
   border-radius: 6px;
   font-size: 0.825rem;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 25px var(--shadow-color);
   display: flex;
   align-items: center;
   gap: 8px;
