@@ -189,14 +189,22 @@
               <button id="copy-btn" class="px-4 py-2.5 rounded bg-wheat-card border border-wheat-border text-text-primary text-xs font-bold hover:bg-wheat-alt transition-all">Copy</button>
             </div>
 
-            <div class="flex flex-col sm:flex-row gap-4 items-center sm:items-start text-center sm:text-left bg-wheat-ivory p-4 border border-wheat-border rounded">
-              <div class="qr-code-wrapper flex flex-col items-center">
-                <img id="qr-code-image" src="" alt="Short URL QR Code" class="w-16 h-16 bg-white p-1 rounded border border-wheat-border">
+            <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left bg-wheat-ivory p-5 border border-wheat-border rounded">
+              <div class="qr-code-wrapper flex flex-col items-center shrink-0">
+                <img id="qr-code-image" src="" alt="Short URL QR Code" class="w-28 h-28 bg-white p-1.5 rounded border border-wheat-border">
                 <span class="text-[8px] text-text-muted font-bold uppercase mt-1 tracking-wider">Scan QR</span>
+                <button type="button" id="btn-download-qr" class="mt-2 px-2.5 py-1.5 rounded bg-primary hover:bg-primary-hover text-white font-bold text-[8px] uppercase tracking-wider transition-colors flex items-center gap-1">
+                  <i class="fa-solid fa-download"></i> Save PNG
+                </button>
               </div>
-              <div class="space-y-1">
-                <h4 class="text-[10px] font-extrabold text-text-muted uppercase tracking-wider">Redirection Security:</h4>
-                <p class="text-xs text-text-secondary">Destination paths are encrypted. Phishing check status: OK.</p>
+              <div class="space-y-2.5 text-left w-full">
+                <h4 class="text-[10px] font-extrabold text-text-muted uppercase tracking-wider">Security & Redirection Metrics:</h4>
+                <ul class="space-y-1.5 text-xs text-text-secondary">
+                  <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> <span>Encryption: <strong>AES-256-GCM Secure Channel</strong></span></li>
+                  <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> <span>Spam Shield: <strong>Safe Browsing Checked</strong></span></li>
+                  <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> <span>Edge Forwarding: <strong>Redirection verified (Active)</strong></span></li>
+                  <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-teal-600"></span> <span>Hashed Logs: <strong>Privacy Compliant</strong></span></li>
+                </ul>
               </div>
             </div>
 

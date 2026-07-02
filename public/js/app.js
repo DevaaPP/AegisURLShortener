@@ -457,7 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok) throw new Error(data.error || data.message || 'Failed to shorten URL.');
 
       shortenedUrlInput.value = data.short_url;
-      qrCodeImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(data.short_url)}`;
+      qrCodeImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.short_url)}`;
       resultBox.classList.remove('hidden');
       
       if (safeStorage.getItem('is_anonymous') === 'true') {
@@ -483,6 +483,27 @@ document.addEventListener('DOMContentLoaded', () => {
     shortenedUrlInput.select();
     navigator.clipboard.writeText(shortenedUrlInput.value);
     showToast('Copied to clipboard!', 'success');
+  });
+
+  // Download QR Code image
+  document.getElementById('btn-download-qr').addEventListener('click', async () => {
+    try {
+      const response = await fetch(qrCodeImage.src);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `qrcode-${customCodeInput.value || 'shortcode'}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      showToast('QR Code download started!', 'success');
+    } catch (err) {
+      // CORS fallback: open in new tab
+      window.open(qrCodeImage.src, '_blank');
+      showToast('Opened QR Code in a new tab.', 'info');
+    }
   });
 
   // ========================================================================
