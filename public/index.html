@@ -1,79 +1,158 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AegisURL - Developer URL Shortener</title>
+  <title>AegisURL - Premium Developer-First URL Shortener & Analytics</title>
   
-  <!-- Modern Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#030408',
+              card: '#0a0c16',
+              border: '#1f2029',
+              primary: '#6366f1',
+              secondary: '#a855f7'
+            }
+          }
+        }
+      }
+    }
+  </script>
   
-  <!-- FontAwesome Icons -->
+  <!-- FontAwesome Icons & Google Fonts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Chart.js for Aggregated Analytics -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Custom Styling -->
+  <!-- Custom Overrides -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-  
-  <header class="app-header">
-    <div class="header-container">
-      <div class="logo">
-        <i class="fa-solid fa-shield-halved logo-icon"></i>
-        <span>AegisURL</span>
-      </div>
-      <nav class="nav-menu">
-        <a href="#shorten-section" class="nav-link active"><i class="fa-solid fa-link"></i> Shorten</a>
-        <a href="#dashboard-section" id="nav-dashboard" class="nav-link hidden"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-        <a href="#auth-section" id="nav-auth" class="nav-link"><i class="fa-solid fa-right-to-bracket"></i> Sign In</a>
-        <div id="user-profile" class="user-profile-widget hidden">
-          <span id="user-email" style="font-size: 0.8rem; color: var(--text-muted); margin-right: 0.5rem;">email@test.com</span>
-          <button id="logout-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</button>
+<body class="bg-brand-dark text-slate-200 antialiased overflow-x-hidden grid-bg">
+
+  <!-- ========================================================================
+       TOAST SYSTEM CONTAINER
+       ========================================================================== -->
+  <div id="toast-container"></div>
+
+  <!-- ========================================================================
+       GLOBAL HEADER / NAV BAR
+       ========================================================================== -->
+  <header class="sticky top-0 z-50 bg-brand-dark/80 backdrop-blur-md border-b border-brand-border">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="#shorten-section" class="flex items-center gap-2.5 text-white font-bold text-lg font-title tracking-tight group">
+        <div class="h-9 w-9 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-shield-halved text-white text-base"></i>
         </div>
+        <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-slate-300">Aegis<span class="text-indigo-400 font-extrabold">URL</span></span>
+      </a>
+
+      <!-- Clean Public Navigation -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="#features-section" class="text-sm font-medium text-slate-400 hover:text-white transition-colors">Features</a>
+        <a href="#how-it-works" class="text-sm font-medium text-slate-400 hover:text-white transition-colors">How It Works</a>
+        <a href="#faqs-section" class="text-sm font-medium text-slate-400 hover:text-white transition-colors">FAQs</a>
+        <a href="#api-docs-modal" id="nav-api-docs" class="text-sm font-medium text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-code text-xs mr-1 text-indigo-400"></i> API Docs</a>
       </nav>
+
+      <!-- Authenticated Profile / Dashboard Links -->
+      <div class="flex items-center gap-3">
+        <!-- Logged In widget -->
+        <div id="user-profile" class="hidden flex items-center gap-4">
+          <span id="user-email" class="hidden lg:inline text-xs text-slate-400 font-mono"></span>
+          <a href="#dashboard-section" id="nav-dashboard" class="px-3.5 py-1.5 rounded-lg border border-brand-border bg-slate-900/60 hover:bg-slate-800 text-xs font-semibold text-white tracking-wide transition-all"><i class="fa-solid fa-gauge mr-1 text-indigo-400"></i> Dashboard</a>
+          <button id="logout-btn" class="text-slate-400 hover:text-rose-400 text-sm transition-colors"><i class="fa-solid fa-power-off"></i></button>
+        </div>
+        
+        <!-- Navigation Menu Mobile Toggle -->
+        <button id="mobile-menu-toggle" class="md:hidden text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-bars"></i></button>
+      </div>
+
     </div>
   </header>
 
-  <main class="app-container">
+  <!-- Mobile Dropdown Navigation -->
+  <div id="mobile-menu" class="hidden md:hidden bg-brand-dark/95 border-b border-brand-border py-4 px-6 flex flex-col gap-4 animate-slideIn">
+    <a href="#features-section" class="text-sm font-medium text-slate-400 hover:text-white">Features</a>
+    <a href="#how-it-works" class="text-sm font-medium text-slate-400 hover:text-white">How It Works</a>
+    <a href="#faqs-section" class="text-sm font-medium text-slate-400 hover:text-white">FAQs</a>
+    <a href="#api-docs-modal" class="text-sm font-medium text-slate-400 hover:text-white"><i class="fa-solid fa-code text-xs mr-1 text-indigo-400"></i> API Docs</a>
+  </div>
+
+  <!-- ========================================================================
+       MAIN APP SECTIONS
+       ========================================================================== -->
+  <main class="relative z-10">
     
-    <!-- SECTION 1: URL Shortener Card -->
-    <section id="shorten-section" class="app-section active">
-      <div class="hero-text">
-        <h1>Shorten links. Protect data.</h1>
-        <p>A secure, developer-focused URL shortener with AES-256 encryption at rest and real-time click statistics.</p>
+    <!-- Background Light Blobs -->
+    <div class="absolute -top-40 left-1/4 -z-10 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] animate-blob-1 pointer-events-none"></div>
+    <div class="absolute top-80 right-1/4 -z-10 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px] animate-blob-2 pointer-events-none"></div>
+
+    <!-- ========================================================================
+         SECTION 1: LANDING PAGE & SHORTENER HERO
+         ========================================================================== -->
+    <section id="shorten-section" class="app-section active max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+      
+      <!-- Hero Header -->
+      <div class="text-center max-w-3xl mx-auto mb-10">
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 leading-[1.1]">
+          Shorten Links. <br class="hidden sm:inline">
+          <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500">Track Performance.</span> <br class="hidden sm:inline">
+          Share Anywhere.
+        </h1>
+        <p class="text-base sm:text-lg text-slate-400 mb-8 leading-relaxed">
+          An enterprise-grade, high-performance URL shortener designed for speed, scale, and security. Scan links for malware automatically, encrypt payloads, and track geolocation analytics.
+        </p>
+
+        <!-- CTAs in Hero -->
+        <div id="hero-auth-ctas" class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a href="#auth-section" id="hero-signup-btn" class="w-full sm:w-auto px-8 py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all text-center tracking-wide"><i class="fa-solid fa-user-plus mr-1"></i> Get Started Free</a>
+          <a href="#auth-section" id="hero-login-btn" class="w-full sm:w-auto px-8 py-3 rounded-lg border border-brand-border bg-slate-900/60 hover:bg-slate-800 text-white font-semibold text-sm transition-all text-center tracking-wide"><i class="fa-solid fa-right-to-bracket mr-1"></i> Sign In to Account</a>
+        </div>
       </div>
 
-      <div class="glass-card shortener-card">
-        <!-- Clean Tab Nav inside Card -->
-        <div class="card-tabs">
-          <button id="tab-shorten" class="card-tab-btn active">Shorten Link</button>
-          <button id="tab-api" class="card-tab-btn">Developer API</button>
+      <!-- URL Shortener Card Console -->
+      <div class="max-w-2xl mx-auto bg-slate-950/80 border border-brand-border rounded-xl p-6 sm:p-8 shadow-2xl relative">
+        
+        <!-- Interactive Card Tabs -->
+        <div class="flex gap-1.5 border-b border-brand-border pb-3 mb-6">
+          <button id="tab-shorten" class="px-4 py-1.5 text-xs font-bold rounded-md bg-slate-900 border border-brand-border text-white flex items-center gap-1.5 active"><i class="fa-solid fa-link text-indigo-400"></i> Shorten URL</button>
+          <button id="tab-api" class="px-4 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white flex items-center gap-1.5"><i class="fa-solid fa-terminal"></i> API Request</button>
         </div>
 
-        <!-- Tab 1: Shortener Form -->
+        <!-- Tab Content 1: URL Form -->
         <div id="shorten-form-tab">
-          <form id="shorten-form">
-            <div class="input-group">
-              <label for="target-url"><i class="fa-solid fa-globe"></i> Destination URL</label>
-              <input type="url" id="target-url" placeholder="https://your-long-sensitive-link.com/with-parameters" required>
+          <form id="shorten-form" class="space-y-4">
+            
+            <!-- Destination URL input -->
+            <div class="flex flex-col gap-1.5">
+              <label for="target-url" class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-globe text-slate-500"></i> Destination URL</label>
+              <input type="url" id="target-url" placeholder="https://your-long-sensitive-link.com/with-parameters" required class="bg-brand-dark border border-brand-border rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none w-full transition-all">
             </div>
 
-            <div class="advanced-grid">
-              <div class="input-group">
-                <label for="custom-code"><i class="fa-solid fa-signature"></i> Custom Alias (Optional)</label>
-                <input type="text" id="custom-code" placeholder="e.g., blackfriday">
+            <!-- Advanced Options Stack -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Custom Alias -->
+              <div class="flex flex-col gap-1.5">
+                <label for="custom-code" class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-signature text-slate-500"></i> Custom Alias (Optional)</label>
+                <input type="text" id="custom-code" placeholder="e.g., promo2026" class="bg-brand-dark border border-brand-border rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none w-full transition-all">
               </div>
               
-              <div class="input-group">
-                <label for="expires-in"><i class="fa-solid fa-hourglass-half"></i> Expiry Timer</label>
-                <select id="expires-in">
+              <!-- Expiry selection -->
+              <div class="flex flex-col gap-1.5">
+                <label for="expires-in" class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-hourglass-half text-slate-500"></i> Expiration Timer</label>
+                <select id="expires-in" class="bg-brand-dark border border-brand-border rounded-lg px-4 py-3 text-sm text-slate-300 focus:border-indigo-500 outline-none w-full transition-all">
                   <option value="">Never Expire</option>
-                  <option value="60">1 Minute (Test)</option>
+                  <option value="60">1 Minute (For testing)</option>
                   <option value="3600">1 Hour</option>
                   <option value="86400">1 Day</option>
                   <option value="604800">1 Week</option>
@@ -81,54 +160,69 @@
               </div>
             </div>
 
-            <div class="checkbox-group">
-              <label class="checkbox-container">
-                <input type="checkbox" id="single-use">
-                <span class="checkmark"></span>
-                <span class="label-text"><i class="fa-solid fa-bolt-lightning"></i> Self-Destructing / Single-Use Link</span>
+            <!-- Password and Single-use line -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
+              <label class="flex items-center cursor-pointer select-none text-xs text-slate-300 gap-2">
+                <input type="checkbox" id="single-use" class="sr-only peer">
+                <div class="w-8 h-4 bg-brand-border rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-indigo-500 peer-checked:after:bg-white relative"></div>
+                <span><i class="fa-solid fa-bolt-lightning text-amber-400 mr-0.5"></i> Self-Destructing (Single-Use Link)</span>
               </label>
+              
+              <div class="flex items-center gap-1 text-slate-500 text-[10px] uppercase font-bold tracking-wider">
+                <i class="fa-solid fa-lock"></i> AES-256 Enabled
+              </div>
             </div>
 
-            <button type="submit" id="shorten-submit" class="btn btn-primary btn-block">
-              <span>Generate Secure URL</span>
-              <i class="fa-solid fa-arrow-right"></i>
+            <!-- Submit CTA -->
+            <button type="submit" id="shorten-submit" class="w-full py-3.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 active:scale-[0.99] transition-all">
+              <span id="shorten-btn-text">Generate Secure Link</span>
+              <div id="shorten-spinner" class="spinner hidden"></div>
+              <i id="shorten-arrow" class="fa-solid fa-arrow-right text-xs"></i>
             </button>
           </form>
 
+          <!-- Error Message Banner -->
           <div id="error-alert" class="alert alert-danger hidden">
             <i class="fa-solid fa-triangle-exclamation"></i>
-            <span id="error-message">Error message goes here</span>
+            <span id="error-message">Error processing link.</span>
           </div>
 
-          <!-- Result Box -->
+          <!-- Result Area -->
           <div id="result-box" class="result-box hidden">
-            <h3><i class="fa-solid fa-circle-check"></i> Link Secured Successfully</h3>
+            <h3 class="text-sm font-semibold text-white mb-3 flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-emerald-500"></i> Secure Link Generated</h3>
             
-            <div class="result-url-wrapper">
-              <input type="text" id="shortened-url" readonly>
-              <button id="copy-btn" class="btn btn-copy" title="Copy to Clipboard">
+            <div class="flex gap-2 mb-4">
+              <input type="text" id="shortened-url" readonly class="flex-1 bg-brand-dark border border-brand-border rounded-lg px-4 py-2.5 text-sm text-indigo-300 font-mono focus:border-indigo-500 outline-none">
+              <button id="copy-btn" class="px-4 py-2.5 rounded-lg bg-slate-900 border border-brand-border text-white text-xs font-bold hover:bg-slate-800 flex items-center gap-1.5 transition-colors">
                 <i class="fa-regular fa-copy"></i> Copy
               </button>
             </div>
 
-            <div class="result-meta-grid">
+            <div class="flex gap-4 items-center bg-brand-dark/60 p-4 border border-brand-border rounded-lg">
               <div class="qr-code-wrapper">
-                <img id="qr-code-image" src="" alt="Short URL QR Code">
-                <span>Scan QR Code</span>
+                <img id="qr-code-image" src="" alt="Short URL QR Code" class="w-18 h-18 bg-white p-1 rounded border border-slate-200">
+                <span class="text-[9px] text-slate-500 font-bold uppercase mt-1 tracking-wider">Scan QR</span>
               </div>
-              <div class="security-meta-details">
-                <h4>Security Metrics:</h4>
-                <ul>
-                  <li><span class="meta-label">Encryption:</span> <span class="badge badge-success"><i class="fa-solid fa-lock"></i> AES-256-GCM</span></li>
-                  <li><span class="meta-label">Threat Scan:</span> <span class="badge badge-info"><i class="fa-solid fa-circle-nodes"></i> Google Safe Browsing</span></li>
-                  <li><span class="meta-label">Integrity Tag:</span> <span class="badge badge-secondary"><i class="fa-solid fa-barcode"></i> Verified</span></li>
+              <div class="flex-1">
+                <h4 class="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest mb-1.5">Security Metrics:</h4>
+                <ul class="space-y-1">
+                  <li class="text-xs flex items-center gap-1.5 text-slate-300"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> <span class="text-slate-500">Encryption:</span> <span class="font-semibold text-slate-200">AES-256-GCM</span></li>
+                  <li class="text-xs flex items-center gap-1.5 text-slate-300"><span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span> <span class="text-slate-500">Shield Status:</span> <span class="font-semibold text-slate-200">Malware Filter Active</span></li>
                 </ul>
               </div>
+            </div>
+            
+            <!-- Encouragement sign-up prompt for anonymous links -->
+            <div id="anon-signup-prompt" class="hidden mt-4 p-3 bg-indigo-950/20 border border-indigo-900/40 rounded-lg text-center">
+              <p class="text-xs text-indigo-300">
+                <i class="fa-solid fa-circle-info mr-1"></i> This is a temporary demo link. 
+                <a href="#auth-section" class="font-bold text-white underline hover:text-indigo-200 ml-1">Create an Account</a> to save it permanently!
+              </p>
             </div>
           </div>
         </div>
 
-        <!-- Tab 2: Interactive Developer Terminal Card -->
+        <!-- Tab Content 2: API Code Terminal -->
         <div id="terminal-tab" class="terminal-card hidden">
           <div class="terminal-header">
             <span class="terminal-dot"></span>
@@ -137,7 +231,7 @@
             <span class="terminal-title">bash - API Request Generator</span>
           </div>
           <div class="terminal-body">
-            <pre><span class="comment"># You can also shorten URLs via the Developer REST API</span>
+            <pre class="text-slate-400 text-xs"><span class="comment"># Generate links programmatically using our Developer API</span>
 curl -X POST <span class="str">"https://aegis-url.vercel.app/api/v1/shorten"</span> \
   -H <span class="str">"X-API-Key: &lt;YOUR_API_KEY&gt;"</span> \
   -H <span class="str">"Content-Type: application/json"</span> \
@@ -147,151 +241,377 @@ curl -X POST <span class="str">"https://aegis-url.vercel.app/api/v1/shorten"</sp
           </div>
         </div>
       </div>
-    </section>
-
-    <!-- SECTION 2: Developer Authentication Portal -->
-    <section id="auth-section" class="app-section">
-      <div class="auth-wrapper">
-        <div class="glass-card auth-card">
-          <div class="auth-tabs">
-            <button id="tab-login" class="tab-btn active">Sign In</button>
-            <button id="tab-register" class="tab-btn">Register</button>
+      
+      <!-- ========================================================================
+           LANDING PAGE SUB-SECTIONS (ONLY SHOWN TO VISITORS)
+           ========================================================================== -->
+      <div id="visitor-content-sections" class="mt-24 space-y-24">
+        
+        <!-- How It Works Section -->
+        <div id="how-it-works" class="border-t border-brand-border/60 pt-16">
+          <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-3">Enterprise Forwarding in 4 Steps</h2>
+            <p class="text-sm text-slate-400 max-w-xl mx-auto">See how AegisURL shields destination paths and logs click analytics at the edge.</p>
           </div>
-
-          <!-- Login Form -->
-          <form id="login-form" class="auth-form active">
-            <div class="input-group">
-              <label for="login-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
-              <input type="email" id="login-email" placeholder="dev@company.com" required>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="p-5 bg-slate-950 border border-brand-border rounded-xl">
+              <div class="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 text-lg mb-4 font-bold">1</div>
+              <h3 class="text-white font-semibold mb-2">Paste Destination</h3>
+              <p class="text-xs text-slate-400">Input any long URL with sensitive parameters. Our secure handler filters protocols instantly.</p>
             </div>
-            <div class="input-group">
-              <label for="login-password"><i class="fa-solid fa-key"></i> Password</label>
-              <input type="password" id="login-password" placeholder="••••••••" required>
+            <div class="p-5 bg-slate-950 border border-brand-border rounded-xl">
+              <div class="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 text-lg mb-4 font-bold">2</div>
+              <h3 class="text-white font-semibold mb-2">Customize Alias</h3>
+              <p class="text-xs text-slate-400">Specify an optional custom alias name or set expiration configurations to secure namespace allocation.</p>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
-          </form>
-
-          <!-- Register Form -->
-          <form id="register-form" class="auth-form">
-            <div class="input-group">
-              <label for="register-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
-              <input type="email" id="register-email" placeholder="dev@company.com" required>
+            <div class="p-5 bg-slate-950 border border-brand-border rounded-xl">
+              <div class="h-10 w-10 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400 text-lg mb-4 font-bold">3</div>
+              <h3 class="text-white font-semibold mb-2">Generate Link</h3>
+              <p class="text-xs text-slate-400">The destination path is encrypted using AES-256-GCM and stored safely in Postgres with bloom indices.</p>
             </div>
-            <div class="input-group">
-              <label for="register-password"><i class="fa-solid fa-key"></i> Password</label>
-              <input type="password" id="register-password" placeholder="••••••••" required>
+            <div class="p-5 bg-slate-950 border border-brand-border rounded-xl">
+              <div class="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-lg mb-4 font-bold">4</div>
+              <h3 class="text-white font-semibold mb-2">Track & Optimize</h3>
+              <p class="text-xs text-slate-400">Distribute your short URL. Edge redirects take &lt;10ms while logging deep device/geo statistics.</p>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Create Developer Account</button>
-          </form>
-
-          <div id="auth-alert" class="alert alert-danger hidden">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <span id="auth-error-message">Error</span>
           </div>
         </div>
+
+        <!-- Features Grid Section -->
+        <div id="features-section" class="border-t border-brand-border/60 pt-16">
+          <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-3">Designed for Security & Speed</h2>
+            <p class="text-sm text-slate-400 max-w-xl mx-auto">Get access to professional URL shortening capabilities out of the box.</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="p-6 bg-slate-950/60 border border-brand-border rounded-lg hover:border-brand-primary/45 transition-colors">
+              <i class="fa-solid fa-infinity text-indigo-400 text-xl mb-4"></i>
+              <h3 class="text-white font-semibold mb-2">Unlimited Short Links</h3>
+              <p class="text-xs text-slate-400">Create as many short links as your application requires with absolute database stability.</p>
+            </div>
+            <div class="p-6 bg-slate-950/60 border border-brand-border rounded-lg hover:border-brand-primary/45 transition-colors">
+              <i class="fa-solid fa-signature text-purple-400 text-xl mb-4"></i>
+              <h3 class="text-white font-semibold mb-2">Custom Brand Aliases</h3>
+              <p class="text-xs text-slate-400">Take control of link text to establish brand authority and increase link click-through-rates.</p>
+            </div>
+            <div class="p-6 bg-slate-950/60 border border-brand-border rounded-lg hover:border-brand-primary/45 transition-colors">
+              <i class="fa-solid fa-hourglass-end text-pink-400 text-xl mb-4"></i>
+              <h3 class="text-white font-semibold mb-2">Link Expiry Timers</h3>
+              <p class="text-xs text-slate-400">Configure links to self-expire after minutes, hours, or weeks to protect ephemeral content.</p>
+            </div>
+            <div class="p-6 bg-slate-950/60 border border-brand-border rounded-lg hover:border-brand-primary/45 transition-colors">
+              <i class="fa-solid fa-qrcode text-emerald-400 text-xl mb-4"></i>
+              <h3 class="text-white font-semibold mb-2">QR Code Generation</h3>
+              <p class="text-xs text-slate-400">Every shortened link generates a high-definition vector QR Code instantly for offline distribution.</p>
+            </div>
+            <div class="p-6 bg-slate-950/60 border border-brand-border rounded-lg hover:border-brand-primary/45 transition-colors">
+              <i class="fa-solid fa-chart-line text-blue-400 text-xl mb-4"></i>
+              <h3 class="text-white font-semibold mb-2">Deep Analytics</h3>
+              <p class="text-xs text-slate-400">Monitor redirections, unique visitors, browser, and device metrics as they happen at the edge.</p>
+            </div>
+            <div class="p-6 bg-slate-950/60 border border-brand-border rounded-lg hover:border-brand-primary/45 transition-colors">
+              <i class="fa-solid fa-terminal text-slate-300 text-xl mb-4"></i>
+              <h3 class="text-white font-semibold mb-2">Developer REST API</h3>
+              <p class="text-xs text-slate-400">Integrate shortening into your workflows with a simple `X-API-Key` and native json schemas.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Why Choose Us -->
+        <div class="border-t border-brand-border/60 pt-16">
+          <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-3">Enterprise SLA Metrics</h2>
+            <p class="text-sm text-slate-400 max-w-xl mx-auto">Why developer teams prefer AegisURL over consumer-oriented shorteners.</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-6 bg-slate-950 border border-brand-border rounded-xl flex gap-4">
+              <div class="h-10 w-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 shrink-0"><i class="fa-solid fa-gauge-high"></i></div>
+              <div>
+                <h3 class="text-white font-semibold mb-1.5">Sub-10ms Redirection Speed</h3>
+                <p class="text-xs text-slate-400">Using serverless edge CDNs and Redis cache distribution pipelines, redirects complete in milliseconds, keeping user conversions fast.</p>
+              </div>
+            </div>
+            <div class="p-6 bg-slate-950 border border-brand-border rounded-xl flex gap-4">
+              <div class="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0"><i class="fa-solid fa-shield-halved"></i></div>
+              <div>
+                <h3 class="text-white font-semibold mb-1.5">Malware & Spam Protection</h3>
+                <p class="text-xs text-slate-400">Integrated Google Safe Browsing middleware scans destination links in real-time, blocking phishing, malware, or spam automatically.</p>
+              </div>
+            </div>
+            <div class="p-6 bg-slate-950 border border-brand-border rounded-xl flex gap-4">
+              <div class="h-10 w-10 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400 shrink-0"><i class="fa-solid fa-user-shield"></i></div>
+              <div>
+                <h3 class="text-white font-semibold mb-1.5">Privacy First (No Cookies)</h3>
+                <p class="text-xs text-slate-400">Unlike consumer shorteners, we do not place tracking cookies or harvest personal profiles on redirect traffic. Fully compliant with GDPR.</p>
+              </div>
+            </div>
+            <div class="p-6 bg-slate-950 border border-brand-border rounded-xl flex gap-4">
+              <div class="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400 shrink-0"><i class="fa-solid fa-bolt"></i></div>
+              <div>
+                <h3 class="text-white font-semibold mb-1.5">Instant Alias Reclamation</h3>
+                <p class="text-xs text-slate-400">When links expire or are deleted, their custom alias code is instantly recycled and re-claimed, keeping namespaces clean.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAQs Section -->
+        <div id="faqs-section" class="border-t border-brand-border/60 pt-16">
+          <div class="text-center mb-12">
+            <h2 class="text-2xl sm:text-3xl font-bold text-white mb-3">Frequently Asked Questions</h2>
+            <p class="text-sm text-slate-400 max-w-xl mx-auto">Everything you need to know about our link security and redirection policies.</p>
+          </div>
+          <div class="max-w-3xl mx-auto space-y-4">
+            
+            <!-- Q1 -->
+            <div class="border border-brand-border bg-slate-950/60 rounded-lg overflow-hidden">
+              <button class="w-full text-left p-5 font-semibold text-white flex justify-between items-center outline-none faq-btn">
+                <span>What is AegisURL URL shortening?</span>
+                <i class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
+              </button>
+              <div class="accordion-content px-5 text-xs text-slate-400 leading-relaxed">
+                AegisURL is a developer-focused URL shortener. It accepts long URLs (including those with complex query tracking strings), encrypts them with AES-256-GCM on disk, and constructs a short path that forwards users quickly at the edge.
+              </div>
+            </div>
+
+            <!-- Q2 -->
+            <div class="border border-brand-border bg-slate-950/60 rounded-lg overflow-hidden">
+              <button class="w-full text-left p-5 font-semibold text-white flex justify-between items-center outline-none faq-btn">
+                <span>Is the service free for developers?</span>
+                <i class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
+              </button>
+              <div class="accordion-content px-5 text-xs text-slate-400 leading-relaxed">
+                Yes! The core platform, including custom aliases, API keys, and basic redirection analytics, is completely free for individual developers.
+              </div>
+            </div>
+
+            <!-- Q3 -->
+            <div class="border border-brand-border bg-slate-950/60 rounded-lg overflow-hidden">
+              <button class="w-full text-left p-5 font-semibold text-white flex justify-between items-center outline-none faq-btn">
+                <span>How is security and malware scanning handled?</span>
+                <i class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
+              </button>
+              <div class="accordion-content px-5 text-xs text-slate-400 leading-relaxed">
+                When you create a link, AegisURL queries the Google Safe Browsing APIs. If the destination URL matches databases containing malware, phishing vectors, or harmful executables, the link creation is rejected instantly.
+              </div>
+            </div>
+
+            <!-- Q4 -->
+            <div class="border border-brand-border bg-slate-950/60 rounded-lg overflow-hidden">
+              <button class="w-full text-left p-5 font-semibold text-white flex justify-between items-center outline-none faq-btn">
+                <span>Can I delete or modify links?</span>
+                <i class="fa-solid fa-chevron-down text-slate-500 transition-transform"></i>
+              </button>
+              <div class="accordion-content px-5 text-xs text-slate-400 leading-relaxed">
+                Yes, you can manage all active shortcodes from your Developer Dashboard. Deleting a link completely removes its data records and reclaims the custom alias namespace immediately.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================================================
+         SECTION 2: DEV AUTHENTICATION PORTAL (SIGN IN / REGISTER)
+         ========================================================================== -->
+    <section id="auth-section" class="app-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+      <div class="max-w-md mx-auto bg-slate-950 border border-brand-border rounded-xl p-6 sm:p-8 shadow-2xl">
+        
+        <!-- Auth View Tabs -->
+        <div class="flex gap-2 border-b border-brand-border pb-3 mb-6">
+          <button id="tab-login" class="px-4 py-1.5 text-xs font-bold rounded-md bg-slate-900 border border-brand-border text-white active">Sign In</button>
+          <button id="tab-register" class="px-4 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white">Create Account</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="login-form" class="auth-form active space-y-4">
+          <div class="flex flex-col gap-1.5">
+            <label for="login-email" class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fa-solid fa-envelope mr-1"></i> Email Address</label>
+            <input type="email" id="login-email" placeholder="dev@company.com" required class="bg-brand-dark border border-brand-border rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none w-full transition-all">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="login-password" class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fa-solid fa-key mr-1"></i> Password</label>
+            <input type="password" id="login-password" placeholder="••••••••" required class="bg-brand-dark border border-brand-border rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none w-full transition-all">
+          </div>
+          <button type="submit" class="w-full py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-sm tracking-wide shadow-lg shadow-indigo-500/10 transition-all">Authenticate Account</button>
+        </form>
+
+        <!-- REGISTRATION FORM -->
+        <form id="register-form" class="auth-form space-y-4">
+          <div class="flex flex-col gap-1.5">
+            <label for="register-email" class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fa-solid fa-envelope mr-1"></i> Email Address</label>
+            <input type="email" id="register-email" placeholder="dev@company.com" required class="bg-brand-dark border border-brand-border rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none w-full transition-all">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label for="register-password" class="text-xs font-bold text-slate-400 uppercase tracking-wider"><i class="fa-solid fa-key mr-1"></i> Password</label>
+            <input type="password" id="register-password" placeholder="••••••••" required class="bg-brand-dark border border-brand-border rounded-lg px-4 py-3 text-sm text-white focus:border-indigo-500 outline-none w-full transition-all">
+          </div>
+          <button type="submit" class="w-full py-3 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-sm tracking-wide shadow-lg shadow-indigo-500/10 transition-all">Initialize Developer Profile</button>
+        </form>
+
+        <!-- Auth Error Feedback Banner -->
+        <div id="auth-alert" class="alert alert-danger hidden">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span id="auth-error-message">Authentication failed.</span>
+        </div>
+
       </div>
     </section>
 
-    <!-- SECTION 3: Developer SaaS Dashboard -->
-    <section id="dashboard-section" class="app-section">
-      <!-- API Credentials Header -->
-      <div class="glass-card credential-card">
-        <div class="credential-info">
-          <h3 style="font-size: 1rem; font-weight:600; color:var(--text-primary); margin-bottom:0.25rem;"><i class="fa-solid fa-key" style="color:var(--text-muted);"></i> SaaS Developer API Credentials</h3>
-          <p style="font-size: 0.85rem; color:var(--text-muted);">Use this API key in your code header `X-API-Key` to generate short links programmatically.</p>
-        </div>
-        <div class="credential-key-wrapper" style="display: flex; gap: 0.5rem; margin-top:0.75rem;">
-          <input type="password" id="api-key-display" readonly value="aegis_live_..." style="flex: 1; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 0.5rem 0.75rem; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.85rem; outline: none;">
-          <button id="toggle-key-visibility" class="btn btn-secondary" style="padding: 0.5rem 0.75rem;"><i class="fa-solid fa-eye"></i></button>
-          <button id="copy-key-btn" class="btn btn-primary" style="padding: 0.5rem 0.75rem;"><i class="fa-regular fa-copy"></i> Copy</button>
+    <!-- ========================================================================
+         SECTION 3: DEV SAAS CONSOLE DASHBOARD
+         ========================================================================== -->
+    <section id="dashboard-section" class="app-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      
+      <!-- API Credentials Panel -->
+      <div class="bg-slate-950 border border-brand-border rounded-xl p-5 sm:p-6 mb-8 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-key text-indigo-400"></i> SaaS Developer API Access</h3>
+            <p class="text-xs text-slate-400 mt-1">Authenticate script lookups by passing this secret key inside the `X-API-Key` request header.</p>
+          </div>
+          <div class="flex gap-2 max-w-md w-full shrink-0">
+            <input type="password" id="api-key-display" readonly value="aegis_live_..." class="flex-1 bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-xs font-mono text-slate-300 focus:border-indigo-500 outline-none">
+            <button id="toggle-key-visibility" class="px-3.5 py-2 rounded-lg bg-slate-900 border border-brand-border text-slate-400 hover:text-white transition-colors text-xs"><i class="fa-solid fa-eye"></i></button>
+            <button id="copy-key-btn" class="px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-bold tracking-wide shadow-lg shadow-indigo-500/10 transition-all"><i class="fa-regular fa-copy"></i> Copy Key</button>
+          </div>
         </div>
       </div>
 
-      <!-- Links Inventory Container -->
-      <div class="glass-card links-card">
-        <div class="dashboard-actions">
-          <h2>Active Shortcodes</h2>
-          <button id="refresh-links-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      <!-- Links Inventory Card -->
+      <div class="bg-slate-950 border border-brand-border rounded-xl p-6 shadow-xl">
+        <div class="flex items-center justify-between border-b border-brand-border pb-4 mb-4">
+          <h2 class="text-base font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-database text-slate-400"></i> Shortcode Registry</h2>
+          <button id="refresh-links-btn" class="px-3.5 py-1.5 rounded-lg bg-slate-900 border border-brand-border hover:bg-slate-800 text-xs font-semibold text-white tracking-wide transition-all"><i class="fa-solid fa-rotate"></i> Refresh</button>
         </div>
-        <div class="table-wrapper">
-          <table class="links-table">
+        
+        <div class="overflow-x-auto">
+          <table class="links-table w-full text-left text-xs border-collapse">
             <thead>
-              <tr>
-                <th>Code</th>
-                <th>Created</th>
-                <th>Expiration</th>
-                <th>Clicks</th>
-                <th>Actions</th>
+              <tr class="bg-brand-dark border-b border-brand-border text-slate-400 uppercase tracking-wider text-[10px] font-bold">
+                <th class="py-3 px-4">Code</th>
+                <th class="py-3 px-4">Created</th>
+                <th class="py-3 px-4">Expiry Condition</th>
+                <th class="py-3 px-4">Metrics</th>
+                <th class="py-3 px-4">Options</th>
               </tr>
             </thead>
-            <tbody id="links-table-body">
-              <!-- Dynamically populated -->
+            <tbody id="links-table-body" class="divide-y divide-brand-border">
               <tr>
-                <td colspan="5" style="text-align:center; padding:2rem 0; color:var(--text-muted);">Loading links...</td>
+                <td colspan="5" class="py-6 text-center text-slate-500">Loading links inventory...</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
+
     </section>
 
-    <!-- SECTION 4: Click Analytics Dashboard Modal -->
-    <section id="analytics-section" class="app-section">
-      <div class="analytics-header">
-        <button id="back-to-dashboard-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
-        <h2>Analytics Overview: <span id="analytics-code-title">code</span></h2>
+    <!-- ========================================================================
+         SECTION 4: CLICK ANALYTICS CONSOLE
+         ========================================================================== -->
+    <section id="analytics-section" class="app-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      
+      <!-- Back button header -->
+      <div class="flex items-center justify-between border-b border-brand-border pb-4 mb-6">
+        <button id="back-to-dashboard-btn" class="px-3.5 py-1.5 rounded-lg bg-slate-900 border border-brand-border hover:bg-slate-800 text-xs font-semibold text-white tracking-wide transition-all"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Console</button>
+        <h2 class="text-base font-bold text-white flex items-center gap-1.5"><i class="fa-solid fa-chart-line text-indigo-400"></i> Analytics: <span id="analytics-code-title" class="font-mono text-purple-300 ml-1">code</span></h2>
       </div>
 
-      <!-- Main Timeline Chart -->
-      <div class="glass-card chart-card">
-        <h3><i class="fa-solid fa-chart-area"></i> Redirection Traffic (Last 30 Days)</h3>
+      <!-- Timeline Traffic Card -->
+      <div class="bg-slate-950 border border-brand-border rounded-xl p-5 sm:p-6 mb-6 shadow-xl">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-solid fa-chart-area mr-1 text-slate-500"></i> Redirection Traffic (Last 30 Days)</h3>
         <div class="chart-container">
           <canvas id="timeline-chart"></canvas>
         </div>
       </div>
 
-      <!-- Metric breakdown cards (stacked) -->
-      <div class="donut-charts-row">
-        <div class="donut-chart-card">
-          <h3><i class="fa-solid fa-laptop"></i> Devices</h3>
+      <!-- Browser & Device Pie split -->
+      <div class="donut-charts-row mb-6">
+        <div class="bg-slate-950 border border-brand-border rounded-xl p-5 shadow-xl">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-solid fa-mobile-screen-button mr-1 text-slate-500"></i> Device Distribution</h3>
           <div class="chart-container">
             <canvas id="device-chart"></canvas>
           </div>
         </div>
-        <div class="donut-chart-card">
-          <h3><i class="fa-solid fa-window-maximize"></i> Browsers</h3>
+        <div class="bg-slate-950 border border-brand-border rounded-xl p-5 shadow-xl">
+          <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-solid fa-window-restore mr-1 text-slate-500"></i> Browser Distribution</h3>
           <div class="chart-container">
             <canvas id="browser-chart"></canvas>
           </div>
         </div>
       </div>
 
-      <!-- Geo Location table -->
-      <div class="glass-card geo-card" style="margin-top: 1.25rem;">
-        <h3><i class="fa-solid fa-earth-americas"></i> Geolocation clicks</h3>
-        <table class="geo-table" style="width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.85rem;">
-          <thead>
-            <tr style="text-align: left; color: var(--text-muted); border-bottom: 1px solid var(--border-color);">
-              <th style="padding: 0.5rem 0; font-weight:600; font-size:0.75rem; text-transform:uppercase;">Country</th>
-              <th style="padding: 0.5rem 0; font-weight:600; font-size:0.75rem; text-transform:uppercase; text-align: right;">Redirections</th>
-            </tr>
-          </thead>
-          <tbody id="geo-table-body">
-            <tr>
-              <td colspan="2" style="padding: 1.5rem 0; text-align: center; color: var(--text-muted);">No geo data yet.</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Geolocation lists -->
+      <div class="bg-slate-950 border border-brand-border rounded-xl p-6 shadow-xl">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-solid fa-earth-americas mr-1 text-slate-500"></i> Geolocation clicks</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-brand-dark border-b border-brand-border text-slate-400 uppercase tracking-wider text-[10px] font-bold">
+                <th class="py-2.5 px-4">Country Name</th>
+                <th class="py-2.5 px-4 text-right">Redirections</th>
+              </tr>
+            </thead>
+            <tbody id="geo-table-body" class="divide-y divide-brand-border">
+              <tr>
+                <td colspan="2" class="py-4 text-center text-slate-500">No data collected yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
+
     </section>
 
   </main>
 
-  <footer class="app-footer" style="text-align: center; padding: 2rem 0; border-top: 1px solid var(--border-color); margin-top: 4rem;">
-    <p style="font-size: 0.75rem; color: var(--text-muted);">&copy; 2026 AegisURL Inc. Designed for scale. Zero-downtime secure forwarding.</p>
+  <!-- ========================================================================
+       FOOTER
+       ========================================================================== -->
+  <footer class="relative z-10 border-t border-brand-border mt-24 bg-brand-dark/40 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      
+      <!-- Footer Copyright info -->
+      <div class="flex items-center gap-2.5">
+        <div class="h-6 w-6 rounded bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-shield-halved text-white text-[10px]"></i>
+        </div>
+        <p class="text-xs text-slate-500">&copy; 2026 AegisURL Inc. Zero-downtime secure edge forwarding.</p>
+      </div>
+
+      <!-- Legal Document buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <button id="btn-show-privacy" class="text-xs text-slate-500 hover:text-white transition-colors underline bg-none border-none cursor-pointer">Privacy Policy</button>
+        <button id="btn-show-terms" class="text-xs text-slate-500 hover:text-white transition-colors underline bg-none border-none cursor-pointer">Terms of Service</button>
+        <button id="btn-show-cookies" class="text-xs text-slate-500 hover:text-white transition-colors underline bg-none border-none cursor-pointer">Cookie Policy</button>
+        <button id="btn-show-acceptable" class="text-xs text-slate-500 hover:text-white transition-colors underline bg-none border-none cursor-pointer">Acceptable Use</button>
+        <button id="btn-show-contact" class="text-xs text-slate-500 hover:text-white transition-colors underline bg-none border-none cursor-pointer">Contact Us</button>
+      </div>
+
+    </div>
   </footer>
 
-  <!-- App Script -->
+  <!-- ========================================================================
+       MODAL POPUPS SYSTEM (LEGAL & API DOCS OVERLAYS)
+       ========================================================================== -->
+  <div id="modal-overlay" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-950 border border-brand-border rounded-xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6 relative flex flex-col animate-slideIn">
+      
+      <!-- Modal Close -->
+      <button id="modal-close-btn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-base"><i class="fa-solid fa-xmark"></i></button>
+
+      <!-- Modal Body Content -->
+      <div id="modal-content" class="text-xs sm:text-sm text-slate-300 leading-relaxed space-y-4">
+        <!-- Content gets loaded dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- App Script Entrypoint -->
   <script src="/js/app.js"></script>
 </body>
 </html>
