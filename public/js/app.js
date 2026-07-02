@@ -240,6 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dashboardNav.style.display = 'none';
       document.getElementById('hero-auth-ctas').classList.remove('hidden');
       if (mobileToggle) mobileToggle.style.display = '';
+      if (mobMenu) mobMenu.style.display = '';
       apiKeyDisplay.value = '';
     }
   }
@@ -880,8 +881,18 @@ POST /api/v1/shorten</pre>
   const mobileMenu = document.getElementById('mobile-menu');
   
   if (mobileMenuToggle && mobileMenu) {
-    mobileMenuToggle.addEventListener('click', () => {
+    mobileMenuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
       mobileMenu.classList.toggle('hidden');
+    });
+
+    // Close menu when clicking outside of it
+    document.addEventListener('click', (e) => {
+      if (!mobileMenu.classList.contains('hidden')) {
+        if (!mobileMenu.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+          mobileMenu.classList.add('hidden');
+        }
+      }
     });
 
     document.querySelectorAll('.mobile-nav-link').forEach(link => {
